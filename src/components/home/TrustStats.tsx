@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { TRUST_STATS } from "@/lib/constants";
+import { TRUST_STATS, MOCK_PRODUCTS } from "@/lib/constants";
 
 function AnimatedCounter({
   value,
@@ -94,8 +94,12 @@ export function TrustStats() {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           {TRUST_STATS.map((stat, index) => {
+            // Use live product count for "Products Traded"
+            const displayValue = stat.label === "Products Traded"
+              ? String(MOCK_PRODUCTS.length)
+              : stat.value;
             // Parse the value to extract number and suffix
-            const match = stat.value.match(/^(\d+)(.*)$/);
+            const match = displayValue.match(/^(\d+)(.*)$/);
             const numValue = match ? parseInt(match[1], 10) : 0;
             const suffix = match ? match[2] : "";
 

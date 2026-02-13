@@ -5,6 +5,7 @@ import { ArrowRight, Globe, Shield, Boxes } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { Button } from "@/components/ui";
+import { MOCK_PRODUCTS } from "@/lib/constants";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -367,7 +368,7 @@ export function HeroSection() {
                 </div>
                 <div>
                   <p className="text-3xl sm:text-4xl font-bold text-[var(--color-accent)] leading-none">
-                    24
+                    {MOCK_PRODUCTS.length}
                   </p>
                   <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1 font-medium">
                     Products Traded
