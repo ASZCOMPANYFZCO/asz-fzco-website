@@ -10,16 +10,13 @@ import {
   Trash2,
   CheckCircle,
   Upload,
-  ImageIcon,
   X,
+  Loader2,
 } from "lucide-react";
 import { AdminHeader } from "@/components/admin";
 import { Button, Card } from "@/components/ui";
-import {
-  MOCK_PRODUCTS,
-  PRODUCT_CATEGORIES,
-  PRODUCT_CATEGORY_LABELS,
-} from "@/lib/constants";
+import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
+import { getProductById, upsertProduct } from "@/lib/data";
 import type { Product, ProductGrade, MMTASpecs } from "@/lib/types";
 
 const MMTA_SPEC_LABELS: Record<keyof MMTASpecs, string> = {
@@ -49,6 +46,7 @@ export default function AdminProductEditPage() {
   const productId = params.id as string;
   const isNew = productId === "new";
 
+  const [isLoading, setIsLoading] = useState(!isNew);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -76,30 +74,34 @@ export default function AdminProductEditPage() {
   const [productImages, setProductImages] = useState<string[]>([]);
   const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
 
-  // Load product data if editing
+  // Load product data from Supabase if editing
   useEffect(() => {
     if (!isNew) {
-      const product = MOCK_PRODUCTS.find((p) => p.id === productId);
-      if (product) {
-        setName(product.name);
-        setSlug(product.slug);
-        setCategory(product.category);
-        setShortDescription(product.shortDescription);
-        setIsActive(product.isActive);
-        setIsFeatured(product.isFeatured);
-        setSpecifications(
-          Object.entries(product.specifications).map(([key, value]) => ({
-            key,
-            value,
-          }))
-        );
-        if (product.mmtaSpecs) {
-          setMmtaSpecs({ ...product.mmtaSpecs });
+      (async () => {
+        setIsLoading(true);
+        const product = await getProductById(productId);
+        if (product) {
+          setName(product.name);
+          setSlug(product.slug);
+          setCategory(product.category);
+          setShortDescription(product.shortDescription);
+          setIsActive(product.isActive);
+          setIsFeatured(product.isFeatured);
+          setSpecifications(
+            Object.entries(product.specifications).map(([key, value]) => ({
+              key,
+              value,
+            }))
+          );
+          if (product.mmtaSpecs) {
+            setMmtaSpecs({ ...product.mmtaSpecs });
+          }
+          if (product.grades && product.grades.length > 0) {
+            setGrades([...product.grades]);
+          }
         }
-        if (product.grades && product.grades.length > 0) {
-          setGrades([...product.grades]);
-        }
-      }
+        setIsLoading(false);
+      })();
     }
   }, [productId, isNew]);
 
@@ -116,12 +118,72 @@ export default function AdminProductEditPage() {
   }, [name, isNew]);
 
   const handleSave = async () => {
+    if (!name.trim()) {
+      alert("Please enter a product name.");
+      return;
+    }
+
     setIsSaving(true);
-    // Mock save - will connect to Supabase later
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Convert specifications array to object
+    const specsObj: Record<string, string> = {};
+    specifications.forEach((s) => {
+      if (s.key.trim()) specsObj[s.key.trim()] = s.value.trim();
+    });
+
+    // Convert mmtaSpecs to plain object
+    const mmtaObj: Record<string, string> = {};
+    (Object.entries(mmtaSpecs) as [string, string][]).forEach(([k, v]) => {
+      if (v.trim()) mmtaObj[k] = v.trim();
+    });
+
+    // Convert grades to plain array of objects
+    const gradesArr = grades
+      .filter((g) => g.name.trim())
+      .map((g) => ({
+        name: g.name,
+        gradePercent: g.gradePercent || "",
+        sizeMm: g.sizeMm || "",
+        carbonPercent: g.carbonPercent || "",
+        purityPercent: g.purityPercent || "",
+        packaging: g.packaging || "",
+        origin: g.origin || "",
+      }));
+
+    const payload: Parameters<typeof upsertProduct>[0] = {
+      name: name.trim(),
+      slug: slug.trim(),
+      category,
+      short_description: shortDescription.trim(),
+      image: productImages[primaryImageIndex] || undefined,
+      images: productImages.length > 0 ? productImages : undefined,
+      specifications: specsObj,
+      mmta_specs: Object.keys(mmtaObj).length > 0 ? mmtaObj : undefined,
+      grades: gradesArr.length > 0 ? gradesArr : undefined,
+      is_active: isActive,
+      is_featured: isFeatured,
+    };
+
+    if (!isNew) {
+      payload.id = productId;
+    }
+
+    const { data, error } = await upsertProduct(payload);
+
     setIsSaving(false);
+
+    if (error) {
+      alert(`Error saving product: ${error.message}`);
+      return;
+    }
+
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
+
+    // For new products, redirect to edit page with real ID
+    if (isNew && data?.id) {
+      router.replace(`/admin/products/${data.id}`);
+    }
   };
 
   const addSpec = () => {
@@ -168,6 +230,17 @@ export default function AdminProductEditPage() {
     "w-full px-3 py-2.5 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] transition-colors";
   const labelClass =
     "block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5";
+
+  if (isLoading) {
+    return (
+      <>
+        <AdminHeader title="Edit Product" subtitle="Loading..." />
+        <div className="p-4 sm:p-6 flex items-center justify-center min-h-[300px]">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -272,7 +345,6 @@ export default function AdminProductEditPage() {
             Upload product images. The first image will be used as the main display image.
           </p>
 
-          {/* Existing images */}
           {productImages.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
               {productImages.map((img, index) => (
@@ -284,12 +356,12 @@ export default function AdminProductEditPage() {
                       : "border-[var(--color-border)]"
                   }`}
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={img}
                     alt={`Product image ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
-                  {/* Overlay actions */}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <button
                       onClick={() => setPrimaryImageIndex(index)}
@@ -314,7 +386,6 @@ export default function AdminProductEditPage() {
                       <X className="h-3 w-3" />
                     </button>
                   </div>
-                  {/* Primary badge */}
                   {index === primaryImageIndex && (
                     <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[var(--color-accent)] text-white text-xs font-medium">
                       Primary
@@ -325,7 +396,6 @@ export default function AdminProductEditPage() {
             </div>
           )}
 
-          {/* Upload zone */}
           <label className="block border-2 border-dashed border-[var(--color-border)] rounded-xl p-8 text-center hover:border-[var(--color-accent)] transition-colors cursor-pointer">
             <input
               type="file"
@@ -359,14 +429,9 @@ export default function AdminProductEditPage() {
               PNG, JPG or WebP (max. 5MB each)
             </p>
           </label>
-
-          <p className="text-xs text-[var(--color-text-muted)] mt-3">
-            <strong>Note:</strong> Images are stored locally until Supabase is connected.
-            Once connected, images will persist to cloud storage.
-          </p>
         </Card>
 
-        {/* Specifications (Key-Value Pairs) */}
+        {/* Specifications */}
         <Card>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -486,9 +551,7 @@ export default function AdminProductEditPage() {
                       <input
                         type="text"
                         value={grade.name}
-                        onChange={(e) =>
-                          updateGrade(index, "name", e.target.value)
-                        }
+                        onChange={(e) => updateGrade(index, "name", e.target.value)}
                         placeholder="e.g., 60% High Carbon"
                         className={inputClass}
                       />
@@ -500,9 +563,7 @@ export default function AdminProductEditPage() {
                       <input
                         type="text"
                         value={grade.gradePercent || ""}
-                        onChange={(e) =>
-                          updateGrade(index, "gradePercent", e.target.value)
-                        }
+                        onChange={(e) => updateGrade(index, "gradePercent", e.target.value)}
                         placeholder="e.g., 60%"
                         className={inputClass}
                       />
@@ -514,9 +575,7 @@ export default function AdminProductEditPage() {
                       <input
                         type="text"
                         value={grade.sizeMm || ""}
-                        onChange={(e) =>
-                          updateGrade(index, "sizeMm", e.target.value)
-                        }
+                        onChange={(e) => updateGrade(index, "sizeMm", e.target.value)}
                         placeholder="e.g., 10-100mm"
                         className={inputClass}
                       />
@@ -528,9 +587,7 @@ export default function AdminProductEditPage() {
                       <input
                         type="text"
                         value={grade.carbonPercent || ""}
-                        onChange={(e) =>
-                          updateGrade(index, "carbonPercent", e.target.value)
-                        }
+                        onChange={(e) => updateGrade(index, "carbonPercent", e.target.value)}
                         placeholder="e.g., 6-8%"
                         className={inputClass}
                       />
@@ -542,9 +599,7 @@ export default function AdminProductEditPage() {
                       <input
                         type="text"
                         value={grade.purityPercent || ""}
-                        onChange={(e) =>
-                          updateGrade(index, "purityPercent", e.target.value)
-                        }
+                        onChange={(e) => updateGrade(index, "purityPercent", e.target.value)}
                         placeholder="e.g., 60% Cr min"
                         className={inputClass}
                       />
@@ -556,9 +611,7 @@ export default function AdminProductEditPage() {
                       <input
                         type="text"
                         value={grade.packaging || ""}
-                        onChange={(e) =>
-                          updateGrade(index, "packaging", e.target.value)
-                        }
+                        onChange={(e) => updateGrade(index, "packaging", e.target.value)}
                         placeholder="e.g., Big bags 1MT"
                         className={inputClass}
                       />
@@ -570,9 +623,7 @@ export default function AdminProductEditPage() {
                       <input
                         type="text"
                         value={grade.origin || ""}
-                        onChange={(e) =>
-                          updateGrade(index, "origin", e.target.value)
-                        }
+                        onChange={(e) => updateGrade(index, "origin", e.target.value)}
                         placeholder="e.g., South Africa / India"
                         className={inputClass}
                       />

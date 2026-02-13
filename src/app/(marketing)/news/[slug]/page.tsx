@@ -1,66 +1,73 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Calendar,
   Clock,
   User,
-  Share2,
   Twitter,
   Linkedin,
   Facebook,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
-import { PageHeader } from "@/components/shared";
 import { BlogCard } from "@/components/blog";
 import { Button, Badge, Card } from "@/components/ui";
-import { MOCK_BLOG_POSTS, BLOG_CATEGORIES, SITE_CONFIG } from "@/lib/constants";
+import { BLOG_CATEGORIES, SITE_CONFIG } from "@/lib/constants";
+import { getBlogPostBySlug, getBlogPosts } from "@/lib/data";
+import type { DBBlogPost } from "@/lib/data";
 import { formatDate, getReadingTime } from "@/lib/utils";
 
-interface ArticlePageProps {
-  params: Promise<{ slug: string }>;
-}
+export default function ArticlePage() {
+  const params = useParams();
+  const slug = params.slug as string;
+  const [post, setPost] = useState<DBBlogPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<DBBlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
-// Generate static params for all posts
-export async function generateStaticParams() {
-  return MOCK_BLOG_POSTS.map((post) => ({
-    slug: post.slug,
-  }));
-}
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      const p = await getBlogPostBySlug(slug);
+      setPost(p);
 
-// Generate metadata for each post
-export async function generateMetadata({
-  params,
-}: ArticlePageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const post = MOCK_BLOG_POSTS.find((p) => p.slug === slug);
+      if (p) {
+        const allPosts = await getBlogPosts();
+        setRelatedPosts(
+          allPosts
+            .filter((rp) => rp.category === p.category && rp.id !== p.id)
+            .slice(0, 2)
+        );
+      }
+      setLoading(false);
+    }
+    load();
+  }, [slug]);
 
-  if (!post) {
-    return {
-      title: "Article Not Found",
-    };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
+      </div>
+    );
   }
 
-  return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      type: "article",
-      publishedTime: post.publishedAt,
-      authors: [post.author],
-    },
-  };
-}
-
-export default async function ArticlePage({ params }: ArticlePageProps) {
-  const { slug } = await params;
-  const post = MOCK_BLOG_POSTS.find((p) => p.slug === slug);
-
   if (!post) {
-    notFound();
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+            Article Not Found
+          </h1>
+          <Link href="/news">
+            <Button variant="outline">Back to News</Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const getCategoryLabel = (categoryValue: string) => {
@@ -68,40 +75,22 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     return category?.label || categoryValue;
   };
 
-  // Get related posts (same category, excluding current)
-  const relatedPosts = MOCK_BLOG_POSTS.filter(
-    (p) => p.category === post.category && p.id !== post.id
-  ).slice(0, 2);
-
-  // Mock full article content
-  const articleContent = `
-    <p>The global ferro alloys market continues to evolve as industries adapt to changing economic conditions and sustainability requirements. This article explores the key trends shaping the market in 2024 and provides insights for businesses looking to navigate these changes effectively.</p>
-
-    <h2>Market Overview</h2>
-    <p>The demand for ferro alloys remains strong, driven primarily by the steel industry's recovery and the growing emphasis on high-performance materials. Key factors influencing the market include:</p>
-    <ul>
-      <li>Increased infrastructure spending in emerging economies</li>
-      <li>Growing demand for stainless steel in construction and automotive sectors</li>
-      <li>Rising adoption of electric vehicles, driving demand for specialty alloys</li>
-      <li>Supply chain diversification efforts by major manufacturers</li>
-    </ul>
-
-    <h2>Regional Dynamics</h2>
-    <p>Asia-Pacific continues to dominate the ferro alloys market, with China and India being the largest consumers. However, we're seeing increased activity in the Middle East and Africa as these regions develop their steel manufacturing capabilities.</p>
-
-    <h2>Looking Ahead</h2>
-    <p>As we move through 2024, we expect to see continued growth in the ferro alloys sector, with particular emphasis on:</p>
-    <ul>
-      <li>Sustainable production methods</li>
-      <li>Quality improvement initiatives</li>
-      <li>Strategic partnerships between suppliers and manufacturers</li>
-      <li>Technology adoption for improved efficiency</li>
-    </ul>
-
-    <p>At ASZ Company, we remain committed to providing our clients with the highest quality ferro alloys and minor metals, backed by our extensive industry expertise and global network.</p>
-  `;
+  const articleContent =
+    post.content ||
+    `<p>${post.excerpt}</p><p>Full article content coming soon.</p>`;
 
   const shareUrl = `${SITE_CONFIG.url}/news/${post.slug}`;
+
+  const adaptPost = (p: DBBlogPost) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    excerpt: p.excerpt || "",
+    category: p.category || "",
+    featuredImage: p.featured_image || "",
+    publishedAt: p.published_at || p.created_at,
+    author: p.author,
+  });
 
   return (
     <>
@@ -137,7 +126,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           <div className="max-w-3xl">
             <Badge variant="primary" className="mb-4">
-              {getCategoryLabel(post.category)}
+              {getCategoryLabel(post.category || "")}
             </Badge>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[var(--color-text-primary)] mb-6">
@@ -151,7 +140,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </span>
               <span className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                {formatDate(post.publishedAt)}
+                {formatDate(post.published_at || post.created_at)}
               </span>
               <span className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
@@ -292,7 +281,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
             <div className="grid md:grid-cols-2 gap-6">
               {relatedPosts.map((relatedPost) => (
-                <BlogCard key={relatedPost.id} post={relatedPost} />
+                <BlogCard
+                  key={relatedPost.id}
+                  post={adaptPost(relatedPost)}
+                />
               ))}
             </div>
           </div>
@@ -302,7 +294,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       {/* Back to News */}
       <section className="py-8 border-t border-[var(--color-border)]">
         <div className="container-custom">
-          <Button variant="ghost" leftIcon={<ArrowLeft className="h-4 w-4" />}>
+          <Button
+            variant="ghost"
+            leftIcon={<ArrowLeft className="h-4 w-4" />}
+          >
             <Link href="/news">Back to All News</Link>
           </Button>
         </div>

@@ -1,61 +1,65 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Package, FileText, Beaker, Factory } from "lucide-react";
+import { ArrowLeft, ArrowRight, Package, FileText, Beaker, Factory, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared";
 import { ProductEnquiryForm, ProductCard } from "@/components/products";
 import { Button, Badge, Card } from "@/components/ui";
-import { MOCK_PRODUCTS, PRODUCT_CATEGORY_LABELS, SITE_CONFIG } from "@/lib/constants";
+import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
+import { getProductBySlug, getProducts } from "@/lib/data";
+import type { Product } from "@/lib/types";
 
-interface ProductPageProps {
-  params: Promise<{ slug: string }>;
-}
+export default function ProductPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-// Generate static params for all products
-export async function generateStaticParams() {
-  return MOCK_PRODUCTS.map((product) => ({
-    slug: product.slug,
-  }));
-}
+  useEffect(() => {
+    async function loadProduct() {
+      setLoading(true);
+      const p = await getProductBySlug(slug);
+      setProduct(p);
 
-// Generate metadata for each product
-export async function generateMetadata({
-  params,
-}: ProductPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const product = MOCK_PRODUCTS.find((p) => p.slug === slug);
+      if (p) {
+        const allProducts = await getProducts();
+        setRelatedProducts(
+          allProducts
+            .filter((rp) => rp.category === p.category && rp.id !== p.id)
+            .slice(0, 3)
+        );
+      }
+      setLoading(false);
+    }
+    loadProduct();
+  }, [slug]);
 
-  if (!product) {
-    return {
-      title: "Product Not Found",
-    };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
+      </div>
+    );
   }
 
-  return {
-    title: product.name,
-    description: product.shortDescription,
-    openGraph: {
-      title: `${product.name} | ${SITE_CONFIG.name}`,
-      description: product.shortDescription,
-      type: "website",
-    },
-  };
-}
-
-export default async function ProductPage({ params }: ProductPageProps) {
-  const { slug } = await params;
-  const product = MOCK_PRODUCTS.find((p) => p.slug === slug);
-
   if (!product) {
-    notFound();
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+            Product Not Found
+          </h1>
+          <Link href="/products">
+            <Button variant="outline">Back to Products</Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
-  // Get related products (same category, excluding current)
-  const relatedProducts = MOCK_PRODUCTS.filter(
-    (p) => p.category === product.category && p.id !== product.id
-  ).slice(0, 3);
-
-  // Mock additional product data
   const applications = [
     "Steel Manufacturing",
     "Stainless Steel Production",
@@ -77,7 +81,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
         subtitle={product.shortDescription}
         breadcrumbs={[
           { label: "Products", href: "/products" },
-          { label: PRODUCT_CATEGORY_LABELS[product.category as keyof typeof PRODUCT_CATEGORY_LABELS], href: `/products?category=${product.category}` },
+          {
+            label:
+              PRODUCT_CATEGORY_LABELS[
+                product.category as keyof typeof PRODUCT_CATEGORY_LABELS
+              ],
+            href: `/products?category=${product.category}`,
+          },
           { label: product.name },
         ]}
       />
@@ -213,7 +223,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">
                 Related Products
               </h2>
-              <Button variant="outline" rightIcon={<ArrowRight className="h-4 w-4" />}>
+              <Button
+                variant="outline"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              >
                 <Link href={`/products?category=${product.category}`}>
                   View All
                 </Link>
@@ -221,7 +234,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} product={relatedProduct} />
+                <ProductCard
+                  key={relatedProduct.id}
+                  product={relatedProduct}
+                />
               ))}
             </div>
           </div>
@@ -231,7 +247,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
       {/* Back to Products */}
       <section className="py-8 border-t border-[var(--color-border)]">
         <div className="container-custom">
-          <Button variant="ghost" leftIcon={<ArrowLeft className="h-4 w-4" />}>
+          <Button
+            variant="ghost"
+            leftIcon={<ArrowLeft className="h-4 w-4" />}
+          >
             <Link href="/products">Back to All Products</Link>
           </Button>
         </div>

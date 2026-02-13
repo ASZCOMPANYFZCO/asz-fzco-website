@@ -1,37 +1,57 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageHeader } from "@/components/shared";
 import { BlogCard } from "@/components/blog";
-import { Input } from "@/components/ui";
-import { MOCK_BLOG_POSTS, BLOG_CATEGORIES } from "@/lib/constants";
+import { BLOG_CATEGORIES } from "@/lib/constants";
+import { getBlogPosts } from "@/lib/data";
+import type { DBBlogPost } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Search, FileText } from "lucide-react";
+import { Search, FileText, Loader2 } from "lucide-react";
 
 export default function NewsPage() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [posts, setPosts] = useState<DBBlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getBlogPosts().then((data) => {
+      setPosts(data);
+      setLoading(false);
+    });
+  }, []);
 
   const filteredPosts = useMemo(() => {
-    let posts = [...MOCK_BLOG_POSTS];
+    let filtered = [...posts];
 
-    // Filter by category
     if (activeCategory !== "all") {
-      posts = posts.filter((p) => p.category === activeCategory);
+      filtered = filtered.filter((p) => p.category === activeCategory);
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      posts = posts.filter(
+      filtered = filtered.filter(
         (p) =>
           p.title.toLowerCase().includes(query) ||
-          p.excerpt.toLowerCase().includes(query)
+          (p.excerpt || "").toLowerCase().includes(query)
       );
     }
 
-    return posts;
-  }, [activeCategory, searchQuery]);
+    return filtered;
+  }, [activeCategory, searchQuery, posts]);
+
+  // Adapt DB posts to the shape BlogCard expects
+  const adaptPost = (post: DBBlogPost) => ({
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    excerpt: post.excerpt || "",
+    category: post.category || "",
+    featuredImage: post.featured_image || "",
+    publishedAt: post.published_at || post.created_at,
+    author: post.author,
+  });
 
   const featuredPost = filteredPosts[0];
   const remainingPosts = filteredPosts.slice(1);
@@ -91,12 +111,16 @@ export default function NewsPage() {
           </div>
 
           {/* Results */}
-          {filteredPosts.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
+            </div>
+          ) : filteredPosts.length > 0 ? (
             <>
               {/* Featured Post */}
               {featuredPost && (
                 <div className="mb-8">
-                  <BlogCard post={featuredPost} featured />
+                  <BlogCard post={adaptPost(featuredPost)} featured />
                 </div>
               )}
 
@@ -104,7 +128,7 @@ export default function NewsPage() {
               {remainingPosts.length > 0 && (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {remainingPosts.map((post) => (
-                    <BlogCard key={post.id} post={post} />
+                    <BlogCard key={post.id} post={adaptPost(post)} />
                   ))}
                 </div>
               )}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { TRUST_STATS, MOCK_PRODUCTS } from "@/lib/constants";
+import { TRUST_STATS } from "@/lib/constants";
+import { getProductCount } from "@/lib/data";
 
 function AnimatedCounter({
   value,
@@ -46,6 +47,7 @@ function AnimatedCounter({
 export function TrustStats() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
+  const [productCount, setProductCount] = useState(24);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -62,6 +64,13 @@ export function TrustStats() {
     }
 
     return () => observer.disconnect();
+  }, []);
+
+  // Fetch live product count from Supabase
+  useEffect(() => {
+    getProductCount().then((count) => {
+      if (count > 0) setProductCount(count);
+    });
   }, []);
 
   return (
@@ -93,10 +102,10 @@ export function TrustStats() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {TRUST_STATS.map((stat, index) => {
+          {TRUST_STATS.map((stat) => {
             // Use live product count for "Products Traded"
             const displayValue = stat.label === "Products Traded"
-              ? String(MOCK_PRODUCTS.length)
+              ? String(productCount)
               : stat.value;
             // Parse the value to extract number and suffix
             const match = displayValue.match(/^(\d+)(.*)$/);

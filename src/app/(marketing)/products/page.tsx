@@ -1,39 +1,47 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Search, Filter } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Search, Filter, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared";
 import { ProductCard } from "@/components/products";
-import { Input } from "@/components/ui";
-import { MOCK_PRODUCTS, PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
+import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
+import { getProducts } from "@/lib/data";
+import type { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-type CategoryFilter = "all" | "ferro_alloy" | "minor_metal";
+type CategoryFilter = "all" | "ferro_alloy" | "noble_alloy" | "minor_metal";
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProducts().then((data) => {
+      setProducts(data);
+      setLoading(false);
+    });
+  }, []);
 
   const filteredProducts = useMemo(() => {
-    let products = [...MOCK_PRODUCTS];
+    let filtered = [...products];
 
-    // Filter by category
     if (activeCategory !== "all") {
-      products = products.filter((p) => p.category === activeCategory);
+      filtered = filtered.filter((p) => p.category === activeCategory);
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      products = products.filter(
+      filtered = filtered.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
           p.shortDescription.toLowerCase().includes(query)
       );
     }
 
-    return products;
-  }, [searchQuery, activeCategory]);
+    return filtered;
+  }, [searchQuery, activeCategory, products]);
 
   return (
     <>
@@ -61,7 +69,7 @@ export default function ProductsPage() {
 
             {/* Category Tabs */}
             <div className="flex gap-2 p-1 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-              {(["all", "ferro_alloy", "minor_metal"] as const).map(
+              {(["all", "ferro_alloy", "noble_alloy", "minor_metal"] as const).map(
                 (category) => (
                   <button
                     key={category}
@@ -84,12 +92,17 @@ export default function ProductsPage() {
 
           {/* Results Count */}
           <p className="text-sm text-[var(--color-text-muted)] mb-6">
-            Showing {filteredProducts.length} product
-            {filteredProducts.length !== 1 ? "s" : ""}
+            {loading
+              ? "Loading products..."
+              : `Showing ${filteredProducts.length} product${filteredProducts.length !== 1 ? "s" : ""}`}
           </p>
 
           {/* Products Grid */}
-          {filteredProducts.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />

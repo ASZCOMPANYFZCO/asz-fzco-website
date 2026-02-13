@@ -1,84 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Eye, Mail, MessageSquare, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Eye, Mail, MessageSquare, Clock, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { AdminHeader } from "@/components/admin";
 import { Button, Badge, Card } from "@/components/ui";
 import { formatDateShort } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-
-// Mock enquiries data
-const mockEnquiries = [
-  {
-    id: "1",
-    name: "John Smith",
-    email: "john@company.com",
-    phone: "+1 234 567 8900",
-    company: "Steel Manufacturing Inc.",
-    product: "Ferro Silicon",
-    message: "We are interested in purchasing 500MT of Ferro Silicon. Please provide your best quote.",
-    status: "new",
-    type: "product",
-    date: "2024-01-20",
-  },
-  {
-    id: "2",
-    name: "Sarah Johnson",
-    email: "sarah@manufacturing.com",
-    phone: "+44 20 7123 4567",
-    company: "UK Metals Ltd.",
-    product: "Ferro Chrome",
-    message: "Looking for a reliable supplier of Ferro Chrome for our foundry operations.",
-    status: "read",
-    type: "product",
-    date: "2024-01-19",
-  },
-  {
-    id: "3",
-    name: "Mike Chen",
-    email: "mike@steel.com",
-    phone: "+86 21 1234 5678",
-    company: "China Steel Corp.",
-    product: "Silicon Metal",
-    message: "Need regular supply of Silicon Metal. Let's discuss partnership terms.",
-    status: "replied",
-    type: "partnership",
-    date: "2024-01-18",
-  },
-  {
-    id: "4",
-    name: "Anna Williams",
-    email: "anna@factory.com",
-    phone: "+49 30 1234567",
-    company: "German Foundries GmbH",
-    product: null,
-    message: "General inquiry about your product range and minimum order quantities.",
-    status: "new",
-    type: "general",
-    date: "2024-01-17",
-  },
-  {
-    id: "5",
-    name: "Robert Lee",
-    email: "robert@alloys.com",
-    phone: "+1 555 987 6543",
-    company: "Alloys International",
-    product: "Ferro Manganese",
-    message: "Interested in Ferro Manganese specifications and pricing for Q2 2024.",
-    status: "closed",
-    type: "product",
-    date: "2024-01-15",
-  },
-];
+import { getEnquiries, updateEnquiryStatus } from "@/lib/data";
+import type { DBEnquiry } from "@/lib/data";
 
 export default function AdminEnquiriesPage() {
+  const [enquiries, setEnquiries] = useState<DBEnquiry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedEnquiry, setSelectedEnquiry] = useState<string | null>(null);
 
-  const filteredEnquiries = mockEnquiries.filter((enquiry) => {
+  useEffect(() => {
+    async function fetchEnquiries() {
+      setLoading(true);
+      try {
+        const data = await getEnquiries();
+        setEnquiries(data);
+      } catch (error) {
+        console.error("Failed to fetch enquiries:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchEnquiries();
+  }, []);
+
+  const filteredEnquiries = enquiries.filter((enquiry) => {
     const matchesSearch =
-      enquiry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      enquiry.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       enquiry.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       enquiry.company?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus =
@@ -86,7 +41,29 @@ export default function AdminEnquiriesPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const selectedEnquiryData = mockEnquiries.find((e) => e.id === selectedEnquiry);
+  const selectedEnquiryData = enquiries.find((e) => e.id === selectedEnquiry);
+
+  const handleMarkAsRead = async (id: string) => {
+    const { error } = await updateEnquiryStatus(id, "read");
+    if (!error) {
+      setEnquiries((prev) =>
+        prev.map((e) => (e.id === id ? { ...e, status: "read" } : e))
+      );
+    } else {
+      console.error("Failed to mark enquiry as read:", error);
+    }
+  };
+
+  const handleClose = async (id: string) => {
+    const { error } = await updateEnquiryStatus(id, "closed");
+    if (!error) {
+      setEnquiries((prev) =>
+        prev.map((e) => (e.id === id ? { ...e, status: "closed" } : e))
+      );
+    } else {
+      console.error("Failed to close enquiry:", error);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -107,7 +84,7 @@ export default function AdminEnquiriesPage() {
     <>
       <AdminHeader
         title="Enquiries"
-        subtitle={`Manage customer enquiries (${mockEnquiries.length} total, ${mockEnquiries.filter((e) => e.status === "new").length} new)`}
+        subtitle={`Manage customer enquiries (${enquiries.length} total, ${enquiries.filter((e) => e.status === "new").length} new)`}
       />
 
       <div className="p-6">
@@ -144,53 +121,62 @@ export default function AdminEnquiriesPage() {
 
             {/* Enquiries List */}
             <Card padding="none">
-              <div className="divide-y divide-[var(--color-border)]">
-                {filteredEnquiries.map((enquiry) => (
-                  <button
-                    key={enquiry.id}
-                    onClick={() => setSelectedEnquiry(enquiry.id)}
-                    className={cn(
-                      "w-full p-4 text-left hover:bg-[var(--color-bg-tertiary)] transition-colors",
-                      selectedEnquiry === enquiry.id &&
-                        "bg-[var(--color-accent-light)]"
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-[var(--color-text-primary)]">
-                            {enquiry.name}
+              {loading ? (
+                <div className="p-12 text-center">
+                  <Loader2 className="h-8 w-8 mx-auto mb-4 text-[var(--color-text-muted)] animate-spin" />
+                  <p className="text-[var(--color-text-muted)]">
+                    Loading enquiries...
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-[var(--color-border)]">
+                  {filteredEnquiries.map((enquiry) => (
+                    <button
+                      key={enquiry.id}
+                      onClick={() => setSelectedEnquiry(enquiry.id)}
+                      className={cn(
+                        "w-full p-4 text-left hover:bg-[var(--color-bg-tertiary)] transition-colors",
+                        selectedEnquiry === enquiry.id &&
+                          "bg-[var(--color-accent-light)]"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium text-[var(--color-text-primary)]">
+                              {enquiry.full_name}
+                            </p>
+                            {getStatusBadge(enquiry.status)}
+                          </div>
+                          <p className="text-sm text-[var(--color-text-muted)]">
+                            {enquiry.company}
                           </p>
-                          {getStatusBadge(enquiry.status)}
+                          {enquiry.products && enquiry.products.length > 0 && (
+                            <p className="text-sm text-[var(--color-accent)] mt-1">
+                              {enquiry.products.join(", ")}
+                            </p>
+                          )}
+                          <p className="text-sm text-[var(--color-text-secondary)] mt-1 line-clamp-1">
+                            {enquiry.message}
+                          </p>
                         </div>
-                        <p className="text-sm text-[var(--color-text-muted)]">
-                          {enquiry.company}
-                        </p>
-                        {enquiry.product && (
-                          <p className="text-sm text-[var(--color-accent)] mt-1">
-                            {enquiry.product}
-                          </p>
-                        )}
-                        <p className="text-sm text-[var(--color-text-secondary)] mt-1 line-clamp-1">
-                          {enquiry.message}
-                        </p>
+                        <div className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                          <Clock className="h-3.5 w-3.5" />
+                          {formatDateShort(enquiry.created_at)}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] whitespace-nowrap">
-                        <Clock className="h-3.5 w-3.5" />
-                        {formatDateShort(enquiry.date)}
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
 
-                {filteredEnquiries.length === 0 && (
-                  <div className="p-12 text-center">
-                    <p className="text-[var(--color-text-muted)]">
-                      No enquiries found
-                    </p>
-                  </div>
-                )}
-              </div>
+                  {filteredEnquiries.length === 0 && (
+                    <div className="p-12 text-center">
+                      <p className="text-[var(--color-text-muted)]">
+                        No enquiries found
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </Card>
           </div>
 
@@ -212,7 +198,7 @@ export default function AdminEnquiriesPage() {
                         Name
                       </p>
                       <p className="font-medium text-[var(--color-text-primary)]">
-                        {selectedEnquiryData.name}
+                        {selectedEnquiryData.full_name}
                       </p>
                     </div>
 
@@ -228,50 +214,82 @@ export default function AdminEnquiriesPage() {
                       </a>
                     </div>
 
-                    <div>
-                      <p className="text-xs text-[var(--color-text-muted)] mb-1">
-                        Phone
-                      </p>
-                      <p className="text-[var(--color-text-primary)]">
-                        {selectedEnquiryData.phone}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-[var(--color-text-muted)] mb-1">
-                        Company
-                      </p>
-                      <p className="text-[var(--color-text-primary)]">
-                        {selectedEnquiryData.company}
-                      </p>
-                    </div>
-
-                    {selectedEnquiryData.product && (
+                    {selectedEnquiryData.phone && (
                       <div>
                         <p className="text-xs text-[var(--color-text-muted)] mb-1">
-                          Product Interest
+                          Phone
                         </p>
-                        <Badge variant="primary">
-                          {selectedEnquiryData.product}
-                        </Badge>
+                        <p className="text-[var(--color-text-primary)]">
+                          {selectedEnquiryData.phone}
+                        </p>
                       </div>
                     )}
 
-                    <div>
-                      <p className="text-xs text-[var(--color-text-muted)] mb-1">
-                        Message
-                      </p>
-                      <p className="text-sm text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] p-3 rounded-lg">
-                        {selectedEnquiryData.message}
-                      </p>
-                    </div>
+                    {selectedEnquiryData.company && (
+                      <div>
+                        <p className="text-xs text-[var(--color-text-muted)] mb-1">
+                          Company
+                        </p>
+                        <p className="text-[var(--color-text-primary)]">
+                          {selectedEnquiryData.company}
+                        </p>
+                      </div>
+                    )}
+
+                    {selectedEnquiryData.country && (
+                      <div>
+                        <p className="text-xs text-[var(--color-text-muted)] mb-1">
+                          Country
+                        </p>
+                        <p className="text-[var(--color-text-primary)]">
+                          {selectedEnquiryData.country}
+                        </p>
+                      </div>
+                    )}
+
+                    {selectedEnquiryData.products && selectedEnquiryData.products.length > 0 && (
+                      <div>
+                        <p className="text-xs text-[var(--color-text-muted)] mb-1">
+                          Products
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedEnquiryData.products.map((product) => (
+                            <Badge key={product} variant="primary">
+                              {product}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedEnquiryData.quantity && (
+                      <div>
+                        <p className="text-xs text-[var(--color-text-muted)] mb-1">
+                          Quantity
+                        </p>
+                        <p className="text-[var(--color-text-primary)]">
+                          {selectedEnquiryData.quantity}
+                        </p>
+                      </div>
+                    )}
+
+                    {selectedEnquiryData.message && (
+                      <div>
+                        <p className="text-xs text-[var(--color-text-muted)] mb-1">
+                          Message
+                        </p>
+                        <p className="text-sm text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] p-3 rounded-lg">
+                          {selectedEnquiryData.message}
+                        </p>
+                      </div>
+                    )}
 
                     <div>
                       <p className="text-xs text-[var(--color-text-muted)] mb-1">
                         Received
                       </p>
                       <p className="text-[var(--color-text-primary)]">
-                        {formatDateShort(selectedEnquiryData.date)}
+                        {formatDateShort(selectedEnquiryData.created_at)}
                       </p>
                     </div>
                   </div>
@@ -290,14 +308,14 @@ export default function AdminEnquiriesPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => alert("Mark as Read functionality will be available once the database is connected.")}
+                        onClick={() => handleMarkAsRead(selectedEnquiryData.id)}
                       >
                         Mark as Read
                       </Button>
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => alert("Close functionality will be available once the database is connected.")}
+                        onClick={() => handleClose(selectedEnquiryData.id)}
                       >
                         Close
                       </Button>

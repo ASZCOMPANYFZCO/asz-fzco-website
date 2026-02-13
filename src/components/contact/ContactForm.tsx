@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send, CheckCircle } from "lucide-react";
@@ -10,38 +10,38 @@ import {
   COUNTRIES,
   DELIVERY_TERMS,
   HOW_HEARD_OPTIONS,
-  MOCK_PRODUCTS,
   PRODUCT_CATEGORIES,
   PRODUCT_CATEGORY_LABELS,
 } from "@/lib/constants";
-
-const productsByCategory = [
-  {
-    key: PRODUCT_CATEGORIES.FERRO_ALLOY,
-    label: PRODUCT_CATEGORY_LABELS[PRODUCT_CATEGORIES.FERRO_ALLOY],
-    products: MOCK_PRODUCTS.filter(
-      (p) => p.category === PRODUCT_CATEGORIES.FERRO_ALLOY && p.isActive
-    ),
-  },
-  {
-    key: PRODUCT_CATEGORIES.NOBLE_ALLOY,
-    label: PRODUCT_CATEGORY_LABELS[PRODUCT_CATEGORIES.NOBLE_ALLOY],
-    products: MOCK_PRODUCTS.filter(
-      (p) => p.category === PRODUCT_CATEGORIES.NOBLE_ALLOY && p.isActive
-    ),
-  },
-  {
-    key: PRODUCT_CATEGORIES.MINOR_METAL,
-    label: PRODUCT_CATEGORY_LABELS[PRODUCT_CATEGORIES.MINOR_METAL],
-    products: MOCK_PRODUCTS.filter(
-      (p) => p.category === PRODUCT_CATEGORIES.MINOR_METAL && p.isActive
-    ),
-  },
-];
+import { getProducts } from "@/lib/data";
+import type { Product } from "@/lib/types";
 
 export function ContactForm() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    getProducts().then(setProducts);
+  }, []);
+
+  const productsByCategory = useMemo(() => [
+    {
+      key: PRODUCT_CATEGORIES.FERRO_ALLOY,
+      label: PRODUCT_CATEGORY_LABELS[PRODUCT_CATEGORIES.FERRO_ALLOY],
+      products: products.filter((p) => p.category === PRODUCT_CATEGORIES.FERRO_ALLOY),
+    },
+    {
+      key: PRODUCT_CATEGORIES.NOBLE_ALLOY,
+      label: PRODUCT_CATEGORY_LABELS[PRODUCT_CATEGORIES.NOBLE_ALLOY],
+      products: products.filter((p) => p.category === PRODUCT_CATEGORIES.NOBLE_ALLOY),
+    },
+    {
+      key: PRODUCT_CATEGORIES.MINOR_METAL,
+      label: PRODUCT_CATEGORY_LABELS[PRODUCT_CATEGORIES.MINOR_METAL],
+      products: products.filter((p) => p.category === PRODUCT_CATEGORIES.MINOR_METAL),
+    },
+  ], [products]);
 
   const {
     register,

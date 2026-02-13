@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { ArrowRight, Globe, Shield, Boxes } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui";
-import { MOCK_PRODUCTS } from "@/lib/constants";
+import { getProductCount } from "@/lib/data";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -230,6 +230,14 @@ function TradeNetworkVisual() {
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const [productCount, setProductCount] = useState(24);
+
+  useEffect(() => {
+    getProductCount().then((count) => {
+      if (count > 0) setProductCount(count);
+    });
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
@@ -368,7 +376,7 @@ export function HeroSection() {
                 </div>
                 <div>
                   <p className="text-3xl sm:text-4xl font-bold text-[var(--color-accent)] leading-none">
-                    {MOCK_PRODUCTS.length}
+                    {productCount}
                   </p>
                   <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1 font-medium">
                     Products Traded

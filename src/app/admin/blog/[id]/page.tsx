@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { AdminHeader } from "@/components/admin";
 import { Button, Card } from "@/components/ui";
-import { MOCK_BLOG_POSTS, BLOG_CATEGORIES } from "@/lib/constants";
+import { BLOG_CATEGORIES } from "@/lib/constants";
+import { getBlogPostById, upsertBlogPost } from "@/lib/data";
 
 export default function AdminBlogEditPage() {
   const params = useParams();
@@ -22,6 +23,7 @@ export default function AdminBlogEditPage() {
   const postId = params.id as string;
   const isNew = postId === "new";
 
+  const [isLoading, setIsLoading] = useState(!isNew);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -41,25 +43,32 @@ export default function AdminBlogEditPage() {
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
 
-  // Load existing post data
+  // Load existing post data from Supabase
   useEffect(() => {
     if (!isNew) {
-      const post = MOCK_BLOG_POSTS.find((p) => p.id === postId);
-      if (post) {
-        setTitle(post.title);
-        setSlug(post.slug);
-        setCategory(post.category);
-        setExcerpt(post.excerpt);
-        setContent(
-          `<p>${post.excerpt}</p>\n\n<p>This is the full content of the blog post. Edit this content to update the article.</p>`
-        );
-        setStatus("published");
-        setPublishedAt(post.publishedAt);
-        setAuthor(post.author);
-        if (post.featuredImage) {
-          setFeaturedImage(post.featuredImage);
+      (async () => {
+        setIsLoading(true);
+        const post = await getBlogPostById(postId);
+        if (post) {
+          setTitle(post.title);
+          setSlug(post.slug);
+          setCategory(post.category || "market-insights");
+          setExcerpt(post.excerpt || "");
+          setContent(post.content || "");
+          setStatus(post.status || "draft");
+          setPublishedAt(
+            post.published_at
+              ? post.published_at.split("T")[0]
+              : new Date().toISOString().split("T")[0]
+          );
+          setAuthor(post.author || "ASZ Company FZCO");
+          setIsFeatured(post.is_featured || false);
+          if (post.featured_image) {
+            setFeaturedImage(post.featured_image);
+          }
         }
-      }
+        setIsLoading(false);
+      })();
     }
   }, [postId, isNew]);
 
@@ -89,11 +98,41 @@ export default function AdminBlogEditPage() {
     }
 
     setIsSaving(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const postData: Parameters<typeof upsertBlogPost>[0] = {
+      title: title.trim(),
+      slug: slug.trim(),
+      excerpt: excerpt.trim(),
+      content,
+      category,
+      featured_image: featuredImage || undefined,
+      author,
+      status,
+      is_featured: isFeatured,
+      published_at: publishedAt || undefined,
+    };
+
+    // For existing posts, include the id so upsertBlogPost does an update
+    if (!isNew) {
+      postData.id = postId;
+    }
+
+    const { data, error } = await upsertBlogPost(postData);
+
     setIsSaving(false);
+
+    if (error) {
+      alert(`Error saving post: ${error.message}`);
+      return;
+    }
+
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
+
+    // For new posts, redirect to the edit page with the real ID
+    if (isNew && data?.id) {
+      router.replace(`/admin/blog/${data.id}`);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,6 +146,17 @@ export default function AdminBlogEditPage() {
     reader.readAsDataURL(file);
     e.target.value = "";
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <AdminHeader title="Edit Blog Post" subtitle="Loading..." />
+        <div className="p-4 sm:p-6 flex items-center justify-center min-h-[300px]">
+          <p className="text-[var(--color-text-muted)]">Loading post...</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -406,15 +456,6 @@ export default function AdminBlogEditPage() {
               )}
             </Card>
           </div>
-        </div>
-
-        {/* Database Note */}
-        <div className="mt-6 p-4 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
-          <p className="text-sm text-[var(--color-text-muted)]">
-            <strong className="text-[var(--color-text-primary)]">Note:</strong>{" "}
-            Changes are currently saved locally. Once the database is connected,
-            all posts will persist to Supabase automatically.
-          </p>
         </div>
       </div>
     </>
