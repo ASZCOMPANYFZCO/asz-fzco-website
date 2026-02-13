@@ -551,3 +551,23 @@ body {
 .float-animation {
   animation: float 6s ease-in-out infinite;
 }
+
+/* Logo dark mode — driven by data-theme so filter stays in sync with background */
+.logo-auto {
+  filter: none;
+  transition: filter 0.3s ease;
+}
+
+[data-theme="dark"] .logo-auto {
+  filter: invert(1) brightness(1.8);
+}
+
+/* MMTA logo — only needs brightness boost in dark mode */
+.logo-mmta-auto {
+  filter: none;
+  transition: filter 0.3s ease;
+}
+
+[data-theme="dark"] .logo-mmta-auto {
+  filter: brightness(1.8);
+}

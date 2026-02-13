@@ -9,13 +9,10 @@ import { cn } from "@/lib/utils";
 import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
 import { Button } from "@/components/ui";
 import { ThemeToggle } from "./ThemeToggle";
-import { useTheme } from "@/context/ThemeContext";
-
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
-  const { theme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,11 +54,7 @@ export function Header() {
               alt="ASZ Company FZCO"
               width={240}
               height={72}
-              className="h-12 w-auto sm:h-16"
-              style={{
-                filter:
-                  theme === "dark" ? "invert(1) brightness(2)" : "none",
-              }}
+              className="h-12 w-auto sm:h-16 logo-auto"
               priority
             />
           </Link>

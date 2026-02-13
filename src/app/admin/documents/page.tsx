@@ -143,7 +143,15 @@ export default function AdminDocumentsPage() {
             </select>
           </div>
 
-          <Button leftIcon={<Upload className="h-4 w-4" />}>Upload Document</Button>
+          <Button
+            leftIcon={<Upload className="h-4 w-4" />}
+            onClick={() => {
+              const uploadZone = document.getElementById("upload-zone");
+              if (uploadZone) uploadZone.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            Upload Document
+          </Button>
         </div>
 
         {/* Documents Grid */}
@@ -174,13 +182,22 @@ export default function AdminDocumentsPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => alert("Edit functionality will be available once the database is connected.")}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => {
+                        if (confirm(`Delete "${doc.title}"? This action cannot be undone.`)) {
+                          alert("Delete functionality will be available once the database is connected.");
+                        }
+                      }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -199,7 +216,7 @@ export default function AdminDocumentsPage() {
         )}
 
         {/* Upload Zone */}
-        <Card className="border-dashed border-2">
+        <Card id="upload-zone" className="border-dashed border-2">
           <div className="text-center py-8">
             <Upload className="h-10 w-10 mx-auto mb-4 text-[var(--color-text-muted)]" />
             <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
@@ -208,7 +225,25 @@ export default function AdminDocumentsPage() {
             <p className="text-sm text-[var(--color-text-muted)] mb-4">
               Drag and drop a file here, or click to browse
             </p>
-            <Button variant="secondary">Choose File</Button>
+            <input
+              type="file"
+              id="doc-upload"
+              accept=".pdf,.doc,.docx"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  alert(`File "${file.name}" selected. Upload functionality will be available once the database is connected.`);
+                  e.target.value = "";
+                }
+              }}
+            />
+            <Button
+              variant="secondary"
+              onClick={() => document.getElementById("doc-upload")?.click()}
+            >
+              Choose File
+            </Button>
             <p className="text-xs text-[var(--color-text-muted)] mt-2">
               Supported: PDF, DOC, DOCX (Max 10MB)
             </p>

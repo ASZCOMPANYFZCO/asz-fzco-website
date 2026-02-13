@@ -9,11 +9,9 @@ import {
   Linkedin,
 } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/constants";
-import { useTheme } from "@/context/ThemeContext";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
-  const { theme } = useTheme();
 
   const productLinks = [
     { href: "/products?category=ferro_alloy", label: "Ferro Alloys" },
@@ -44,11 +42,7 @@ export function Footer() {
                 alt="ASZ Company FZCO"
                 width={240}
                 height={72}
-                className="h-14 w-auto"
-                style={{
-                  filter:
-                    theme === "dark" ? "invert(1) brightness(2)" : "none",
-                }}
+                className="h-14 w-auto logo-auto"
               />
             </Link>
             <p className="text-[var(--color-text-secondary)] text-sm mb-4">
@@ -67,11 +61,7 @@ export function Footer() {
                 alt="MMTA Member"
                 width={180}
                 height={72}
-                className="h-12 w-auto"
-                style={{
-                  filter:
-                    theme === "dark" ? "brightness(1.8)" : "none",
-                }}
+                className="h-12 w-auto logo-mmta-auto"
               />
             </a>
             <div className="flex gap-3">

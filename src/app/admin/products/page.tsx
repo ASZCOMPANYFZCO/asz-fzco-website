@@ -122,6 +122,11 @@ export default function AdminProductsPage() {
                   variant="secondary"
                   size="sm"
                   className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                  onClick={() => {
+                    if (confirm(`Delete "${product.name}"? This action cannot be undone.`)) {
+                      alert("Delete functionality will be available once the database is connected.");
+                    }
+                  }}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -210,6 +215,11 @@ export default function AdminProductsPage() {
                           variant="ghost"
                           size="sm"
                           className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                          onClick={() => {
+                            if (confirm(`Delete "${product.name}"? This action cannot be undone.`)) {
+                              alert("Delete functionality will be available once the database is connected.");
+                            }
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

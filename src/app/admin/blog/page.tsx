@@ -62,7 +62,9 @@ export default function AdminBlogPage() {
             </select>
           </div>
 
-          <Button leftIcon={<Plus className="h-4 w-4" />}>New Post</Button>
+          <Link href="/admin/blog/new">
+            <Button leftIcon={<Plus className="h-4 w-4" />}>New Post</Button>
+          </Link>
         </div>
 
         {/* Posts Table */}
@@ -138,13 +140,20 @@ export default function AdminBlogPage() {
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <Link href={`/admin/blog/${post.id}`}>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </Link>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                          onClick={() => {
+                            if (confirm(`Delete "${post.title}"? This action cannot be undone.`)) {
+                              alert("Delete functionality will be available once the database is connected.");
+                            }
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

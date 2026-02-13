@@ -1,12 +1,7 @@
-"use client";
-
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
-import { useTheme } from "@/context/ThemeContext";
 
 export function MMTAMembership() {
-  const { theme } = useTheme();
-
   return (
     <section className="py-16 bg-[var(--color-bg-secondary)] border-t border-b border-[var(--color-border)]">
       <div className="container-custom">
@@ -23,11 +18,7 @@ export function MMTAMembership() {
               alt="MMTA - Minor Metals Trade Association"
               width={200}
               height={80}
-              className="h-20 sm:h-24 w-auto"
-              style={{
-                filter:
-                  theme === "dark" ? "brightness(1.8)" : "none",
-              }}
+              className="h-20 sm:h-24 w-auto logo-mmta-auto"
             />
           </a>
 

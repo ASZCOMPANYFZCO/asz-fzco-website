@@ -287,10 +287,18 @@ export default function AdminEnquiriesPage() {
                       Reply via Email
                     </Button>
                     <div className="grid grid-cols-2 gap-2">
-                      <Button variant="secondary" size="sm">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => alert("Mark as Read functionality will be available once the database is connected.")}
+                      >
                         Mark as Read
                       </Button>
-                      <Button variant="secondary" size="sm">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => alert("Close functionality will be available once the database is connected.")}
+                      >
                         Close
                       </Button>
                     </div>
