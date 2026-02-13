@@ -9,6 +9,9 @@ import {
   Plus,
   Trash2,
   CheckCircle,
+  Upload,
+  ImageIcon,
+  X,
 } from "lucide-react";
 import { AdminHeader } from "@/components/admin";
 import { Button, Card } from "@/components/ui";
@@ -70,6 +73,8 @@ export default function AdminProductEditPage() {
     weighingSampling: "",
   });
   const [grades, setGrades] = useState<ProductGrade[]>([]);
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
 
   // Load product data if editing
   useEffect(() => {
@@ -256,6 +261,109 @@ export default function AdminProductEditPage() {
               className={inputClass}
             />
           </div>
+        </Card>
+
+        {/* Product Images */}
+        <Card>
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-1">
+            Product Images
+          </h3>
+          <p className="text-sm text-[var(--color-text-muted)] mb-4">
+            Upload product images. The first image will be used as the main display image.
+          </p>
+
+          {/* Existing images */}
+          {productImages.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+              {productImages.map((img, index) => (
+                <div
+                  key={index}
+                  className={`relative group rounded-lg border-2 overflow-hidden aspect-square ${
+                    index === primaryImageIndex
+                      ? "border-[var(--color-accent)]"
+                      : "border-[var(--color-border)]"
+                  }`}
+                >
+                  <img
+                    src={img}
+                    alt={`Product image ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Overlay actions */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => setPrimaryImageIndex(index)}
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        index === primaryImageIndex
+                          ? "bg-[var(--color-accent)] text-white"
+                          : "bg-white text-gray-800 hover:bg-gray-100"
+                      }`}
+                    >
+                      {index === primaryImageIndex ? "Primary" : "Set Primary"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const updated = productImages.filter((_, i) => i !== index);
+                        setProductImages(updated);
+                        if (primaryImageIndex >= updated.length) {
+                          setPrimaryImageIndex(Math.max(0, updated.length - 1));
+                        }
+                      }}
+                      className="p-1.5 rounded bg-red-500 text-white hover:bg-red-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                  {/* Primary badge */}
+                  {index === primaryImageIndex && (
+                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[var(--color-accent)] text-white text-xs font-medium">
+                      Primary
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload zone */}
+          <label className="block border-2 border-dashed border-[var(--color-border)] rounded-xl p-8 text-center hover:border-[var(--color-accent)] transition-colors cursor-pointer">
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                const files = e.target.files;
+                if (files) {
+                  Array.from(files).forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      if (ev.target?.result) {
+                        setProductImages((prev) => [
+                          ...prev,
+                          ev.target!.result as string,
+                        ]);
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  });
+                }
+                e.target.value = "";
+              }}
+            />
+            <Upload className="h-8 w-8 mx-auto text-[var(--color-text-muted)] mb-3" />
+            <p className="text-sm font-medium text-[var(--color-text-primary)] mb-1">
+              Click to upload or drag and drop
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              PNG, JPG or WebP (max. 5MB each)
+            </p>
+          </label>
+
+          <p className="text-xs text-[var(--color-text-muted)] mt-3">
+            <strong>Note:</strong> Images are stored locally until Supabase is connected.
+            Once connected, images will persist to cloud storage.
+          </p>
         </Card>
 
         {/* Specifications (Key-Value Pairs) */}
