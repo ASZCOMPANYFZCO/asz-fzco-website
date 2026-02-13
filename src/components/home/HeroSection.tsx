@@ -366,11 +366,11 @@ export function HeroSection() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-3xl sm:text-4xl font-bold text-[var(--color-accent)] leading-none tracking-tight">
-                    MMTA
+                  <p className="text-3xl sm:text-4xl font-bold text-[var(--color-accent)] leading-none">
+                    24
                   </p>
                   <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1 font-medium">
-                    Certified Member
+                    Products Traded
                   </p>
                 </div>
               </div>

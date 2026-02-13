@@ -85,7 +85,7 @@ export const DOCUMENT_TYPE_LABELS = {
 export const TRUST_STATS = [
   { value: '30+', label: 'Countries Supplied' },
   { value: '500+', label: 'Shipments Delivered' },
-  { value: 'MMTA', label: 'Certified Member' },
+  { value: '24', label: 'Products Traded' },
   { value: '100%', label: 'Quality Assured' },
 ] as const;
 
