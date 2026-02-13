@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Source_Sans_3, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { SITE_CONFIG } from "@/lib/constants";
 import { ThemeProvider } from "@/context/ThemeContext";
 
-const inter = Inter({
+const sourceSans = Source_Sans_3({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-body",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-heading",
 });
 
 export const metadata: Metadata = {
@@ -102,7 +107,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${sourceSans.variable} ${playfair.variable} antialiased`}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
