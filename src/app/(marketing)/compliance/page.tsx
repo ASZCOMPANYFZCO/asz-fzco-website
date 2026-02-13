@@ -6,11 +6,10 @@ import {
   Shield,
   Award,
   CheckCircle,
-  ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared";
 import { Button, Card, Badge } from "@/components/ui";
-import { DOCUMENT_TYPE_LABELS } from "@/lib/constants";
+// Document type labels kept inline since all are compliance docs
 
 export const metadata: Metadata = {
   title: "Compliance & Documentation",
@@ -18,89 +17,73 @@ export const metadata: Metadata = {
     "Access ASZ Company's compliance forms, certifications, and documentation. Download MSDS, quality certificates, and company brochures.",
 };
 
-// Mock documents data
 const documents = [
   {
     id: "1",
-    title: "Company Registration Certificate",
-    description: "Official company registration and trade license documentation.",
+    title: "Code of Conduct",
+    description:
+      "ASZ Company's code of conduct outlining our ethical standards, business principles, and expectations for employees and partners.",
     type: "compliance",
-    fileSize: "245 KB",
+    fileSize: "377 KB",
     fileType: "PDF",
+    href: "/documents/code-of-conduct.pdf",
   },
   {
     id: "2",
-    title: "Quality Management Certificate",
-    description: "ISO 9001:2015 Quality Management System certification.",
-    type: "certification",
-    fileSize: "180 KB",
+    title: "Anti-Corruption Program",
+    description:
+      "Our comprehensive anti-corruption program detailing policies, procedures, and controls to prevent corrupt practices.",
+    type: "compliance",
+    fileSize: "126 KB",
     fileType: "PDF",
+    href: "/documents/anti-corruption-program.pdf",
   },
   {
     id: "3",
-    title: "Company Profile & Brochure",
-    description: "Comprehensive overview of ASZ Company, services, and capabilities.",
-    type: "brochure",
-    fileSize: "1.2 MB",
+    title: "Anti-Bribery Program",
+    description:
+      "ASZ Company's anti-bribery program ensuring compliance with international anti-bribery laws and regulations.",
+    type: "compliance",
+    fileSize: "118 KB",
     fileType: "PDF",
+    href: "/documents/anti-bribery-program.pdf",
   },
   {
     id: "4",
-    title: "Ferro Silicon MSDS",
-    description: "Material Safety Data Sheet for Ferro Silicon products.",
-    type: "msds",
-    fileSize: "320 KB",
+    title: "COSHH Compliance Plan",
+    description:
+      "Control of Substances Hazardous to Health compliance plan for safe handling and management of metals and alloys.",
+    type: "compliance",
+    fileSize: "104 KB",
     fileType: "PDF",
+    href: "/documents/coshh-compliance-plan.pdf",
   },
   {
     id: "5",
-    title: "Ferro Chrome MSDS",
-    description: "Material Safety Data Sheet for Ferro Chrome products.",
-    type: "msds",
-    fileSize: "315 KB",
-    fileType: "PDF",
-  },
-  {
-    id: "6",
-    title: "Silicon Metal Specifications",
-    description: "Technical specifications for Silicon Metal grades.",
-    type: "specification",
-    fileSize: "156 KB",
-    fileType: "PDF",
-  },
-  {
-    id: "7",
-    title: "Supplier Code of Conduct",
-    description: "Our standards and expectations for supplier partnerships.",
+    title: "Modern Slavery & Human Trafficking Policy",
+    description:
+      "Our policy and commitment to preventing modern slavery and human trafficking across our supply chain and operations.",
     type: "compliance",
-    fileSize: "98 KB",
+    fileSize: "337 KB",
     fileType: "PDF",
-  },
-  {
-    id: "8",
-    title: "Environmental Policy",
-    description: "Our commitment to environmental responsibility and sustainability.",
-    type: "compliance",
-    fileSize: "125 KB",
-    fileType: "PDF",
+    href: "/documents/modern-slavery-policy.pdf",
   },
 ];
 
-// Mock certifications
 const certifications = [
   {
-    name: "ISO 9001:2015",
-    description: "Quality Management System",
+    name: "MMTA Member",
+    description: "Minor Metals Trade Association",
     icon: Award,
   },
   {
-    name: "Dubai Chamber",
-    description: "Member of Dubai Chamber of Commerce",
+    name: "DMCC Licensed",
+    description: "Dubai Multi Commodities Centre",
     icon: Shield,
   },
   {
-    name: "Trade License",
-    description: "Licensed Metal Trader in UAE",
+    name: "FZCO Registered",
+    description: "Free Zone Company in UAE",
     icon: CheckCircle,
   },
 ];
@@ -163,7 +146,7 @@ export default function CompliancePage() {
                       {doc.title}
                     </h3>
                     <Badge variant="default" size="sm">
-                      {DOCUMENT_TYPE_LABELS[doc.type as keyof typeof DOCUMENT_TYPE_LABELS]}
+                      Compliance
                     </Badge>
                   </div>
                   <p className="text-sm text-[var(--color-text-secondary)] mb-3">
@@ -173,10 +156,14 @@ export default function CompliancePage() {
                     <span className="text-xs text-[var(--color-text-muted)]">
                       {doc.fileType} • {doc.fileSize}
                     </span>
-                    <button className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-accent)] hover:underline">
+                    <a
+                      href={doc.href}
+                      download
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-accent)] hover:underline"
+                    >
                       <Download className="h-4 w-4" />
                       Download
-                    </button>
+                    </a>
                   </div>
                 </div>
               </Card>
