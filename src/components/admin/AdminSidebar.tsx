@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SITE_CONFIG } from "@/lib/constants";
+import { signOut } from "@/lib/auth";
 
 const navItems = [
   {
@@ -58,6 +58,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
@@ -146,7 +147,13 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             <ChevronLeft className="h-5 w-5 flex-shrink-0" />
             Back to Website
           </Link>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+          <button
+            onClick={async () => {
+              await signOut();
+              router.replace("/admin/login");
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+          >
             <LogOut className="h-5 w-5 flex-shrink-0" />
             Logout
           </button>

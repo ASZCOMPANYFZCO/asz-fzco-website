@@ -232,6 +232,31 @@ export function ContactForm() {
                   </div>
                 </div>
               ))}
+              {/* Other option */}
+              <div>
+                <p className="text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                  Other
+                </p>
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
+                  <label
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-all duration-200 text-sm ${
+                      selectedProducts?.includes("Other") ?? false
+                        ? "border-[var(--color-accent)] bg-[var(--color-accent-light)]"
+                        : "border-[var(--color-border)] bg-[var(--color-bg-secondary)] hover:border-[var(--color-accent)]/50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedProducts?.includes("Other") ?? false}
+                      onChange={() => handleProductToggle("Other")}
+                      className="accent-[var(--color-accent)] h-4 w-4 flex-shrink-0"
+                    />
+                    <span className="text-[var(--color-text-primary)]">
+                      Other (please specify in notes)
+                    </span>
+                  </label>
+                </div>
+              </div>
             </div>
             {errors.products?.message && (
               <p className="mt-2 text-sm text-[var(--color-error)]">

@@ -47,7 +47,7 @@ const contactInfo = [
 ];
 
 const businessHours = [
-  { day: "Monday \u2013 Friday", hours: "9:00 AM \u2013 6:00 PM (London Time)" },
+  { day: "Monday \u2013 Friday", hours: "9:00 AM \u2013 6:00 PM" },
   { day: "Saturday", hours: "Closed" },
   { day: "Sunday", hours: "Closed" },
 ];

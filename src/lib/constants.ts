@@ -9,7 +9,7 @@ export const SITE_CONFIG = {
   email: 'general@aszcompany.com',
   phone: '+971502069664',
   founded: '2022',
-  businessHours: 'Mon–Fri 9:00 AM – 6:00 PM (London Time)',
+  businessHours: 'Mon–Fri 9:00 AM – 6:00 PM',
   address: {
     street: '150 HDS Tower',
     area: 'JLT',
@@ -213,7 +213,7 @@ export const COUNTRIES = [
   'Finland', 'France',
   'Georgia', 'Germany', 'Ghana', 'Greece', 'Guatemala',
   'Honduras', 'Hong Kong', 'Hungary',
-  'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy',
+  'Iceland', 'India', 'Indonesia', 'Iraq', 'Ireland', 'Israel', 'Italy',
   'Japan', 'Jordan',
   'Kazakhstan', 'Kenya', 'Kuwait', 'Kyrgyzstan',
   'Latvia', 'Lebanon', 'Libya', 'Lithuania', 'Luxembourg',
@@ -222,7 +222,7 @@ export const COUNTRIES = [
   'Oman',
   'Pakistan', 'Panama', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal',
   'Qatar',
-  'Romania', 'Russia', 'Rwanda',
+  'Romania', 'Rwanda',
   'Saudi Arabia', 'Senegal', 'Serbia', 'Singapore', 'Slovakia', 'Slovenia', 'South Africa', 'South Korea', 'Spain', 'Sri Lanka', 'Sudan', 'Sweden', 'Switzerland', 'Syria',
   'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Tunisia', 'Turkey', 'Turkmenistan',
   'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan',
@@ -266,7 +266,7 @@ export const MOCK_PRODUCTS: Product[] = [
       Size: '10–100mm',
     },
     mmtaSpecs: {
-      origin: 'China, Brazil, Norway, Russia',
+      origin: 'China, Brazil, Norway',
       quality: 'FeSi 75% Standard Grade',
       form: 'Lumps, Granules',
       packaging: 'Big bags (1–1.5 MT) or drums',
@@ -530,7 +530,7 @@ export const MOCK_PRODUCTS: Product[] = [
       Size: '10–50mm',
     },
     mmtaSpecs: {
-      origin: 'China, South Africa, Russia, Brazil',
+      origin: 'China, South Africa, Brazil',
       quality: 'FeV 50% / FeV 80%',
       form: 'Lumps',
       packaging: 'Drums (200–250 kg)',
@@ -725,7 +725,7 @@ export const MOCK_PRODUCTS: Product[] = [
       Form: 'Lumps / Powder',
     },
     mmtaSpecs: {
-      origin: 'China, Russia',
+      origin: 'China',
       form: 'Lumps, Powder, Briquettes',
       packaging: 'Drums or big bags',
       documentation: 'Certificate of Analysis, Weight Certificate',
@@ -901,7 +901,7 @@ export const MOCK_PRODUCTS: Product[] = [
       Form: 'Sponge / Ingots',
     },
     mmtaSpecs: {
-      origin: 'Japan, Kazakhstan, Russia, China',
+      origin: 'Japan, Kazakhstan, China',
       form: 'Sponge, Ingots',
       packaging: 'Drums',
       documentation: 'Certificate of Analysis, Weight Certificate',
@@ -926,7 +926,7 @@ export const MOCK_PRODUCTS: Product[] = [
       Form: 'Powder / Wire / Rod',
     },
     mmtaSpecs: {
-      origin: 'China, Vietnam, Russia',
+      origin: 'China, Vietnam',
       form: 'Powder, Wire, Rod, APT',
       packaging: 'Drums or cases',
       documentation: 'Certificate of Analysis, Weight Certificate',
@@ -951,7 +951,7 @@ export const MOCK_PRODUCTS: Product[] = [
       Form: 'Flake / Powder',
     },
     mmtaSpecs: {
-      origin: 'China, South Africa, Russia, Brazil',
+      origin: 'China, South Africa, Brazil',
       form: 'Flake, Powder, Pentoxide',
       packaging: 'Drums',
       documentation: 'Certificate of Analysis, Weight Certificate',

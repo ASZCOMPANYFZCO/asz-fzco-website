@@ -19,7 +19,7 @@ INSERT INTO products (name, slug, category, short_description, image, specificat
   'Premium ferro silicon for steel deoxidation, alloying, and casting applications.',
   NULL,
   '{"Si": "72–78%", "Al": "1–2%", "C": "0.1% max", "Form": "Lumps / Granules", "Size": "10–100mm"}',
-  '{"origin": "China, Brazil, Norway, Russia", "quality": "FeSi 75% Standard Grade", "form": "Lumps, Granules", "packaging": "Big bags (1–1.5 MT) or drums", "lotSizeTolerance": "As per contract", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
+  '{"origin": "China, Brazil, Norway", "quality": "FeSi 75% Standard Grade", "form": "Lumps, Granules", "packaging": "Big bags (1–1.5 MT) or drums", "lotSizeTolerance": "As per contract", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
   '[{"name": "Ferro-Silicon 75% Standard Grade", "gradePercent": "75%", "sizeMm": "10-60mm", "carbonPercent": "0.1% max", "purityPercent": "75% Si min", "packaging": "Big bags 1MT", "origin": "China / Brazil"}]',
   true,
   true
@@ -105,7 +105,7 @@ INSERT INTO products (name, slug, category, short_description, image, specificat
   'High-purity ferro vanadium for specialty and high-strength steel applications.',
   NULL,
   '{"V": "50–80%", "C": "0.5% max", "Si": "2% max", "Form": "Lumps", "Size": "10–50mm"}',
-  '{"origin": "China, South Africa, Russia, Brazil", "quality": "FeV 50% / FeV 80%", "form": "Lumps", "packaging": "Drums (200–250 kg)", "lotSizeTolerance": "As per contract", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
+  '{"origin": "China, South Africa, Brazil", "quality": "FeV 50% / FeV 80%", "form": "Lumps", "packaging": "Drums (200–250 kg)", "lotSizeTolerance": "As per contract", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
   '[]',
   true,
   true
@@ -191,7 +191,7 @@ INSERT INTO products (name, slug, category, short_description, image, specificat
   'Aluminothermic and electrolytic chromium metal for superalloys and aerospace applications.',
   NULL,
   '{"Cr": "99%+", "Al": "0.5% max", "Fe": "0.3% max", "Form": "Lumps / Powder"}',
-  '{"origin": "China, Russia", "form": "Lumps, Powder, Briquettes", "packaging": "Drums or big bags", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
+  '{"origin": "China", "form": "Lumps, Powder, Briquettes", "packaging": "Drums or big bags", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
   '[]',
   true,
   false
@@ -289,7 +289,7 @@ INSERT INTO products (name, slug, category, short_description, image, specificat
   'Titanium sponge and ingots for aerospace, medical, and industrial applications.',
   NULL,
   '{"Ti": "99.5%+", "Fe": "0.15% max", "O": "0.1% max", "Form": "Sponge / Ingots"}',
-  '{"origin": "Japan, Kazakhstan, Russia, China", "form": "Sponge, Ingots", "packaging": "Drums", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
+  '{"origin": "Japan, Kazakhstan, China", "form": "Sponge, Ingots", "packaging": "Drums", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
   '[]',
   true,
   false
@@ -303,7 +303,7 @@ INSERT INTO products (name, slug, category, short_description, image, specificat
   'Tungsten metal for hard metals, lighting, electronics, and high-temperature applications.',
   NULL,
   '{"W": "99.95%+", "Mo": "0.01% max", "Fe": "0.01% max", "Form": "Powder / Wire / Rod"}',
-  '{"origin": "China, Vietnam, Russia", "form": "Powder, Wire, Rod, APT", "packaging": "Drums or cases", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
+  '{"origin": "China, Vietnam", "form": "Powder, Wire, Rod, APT", "packaging": "Drums or cases", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
   '[]',
   true,
   false
@@ -317,7 +317,7 @@ INSERT INTO products (name, slug, category, short_description, image, specificat
   'Vanadium pentoxide and metal for steel micro-alloying and energy storage.',
   NULL,
   '{"V": "99.5%+", "Fe": "0.05% max", "Si": "0.05% max", "Form": "Flake / Powder"}',
-  '{"origin": "China, South Africa, Russia, Brazil", "form": "Flake, Powder, Pentoxide", "packaging": "Drums", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
+  '{"origin": "China, South Africa, Brazil", "form": "Flake, Powder, Pentoxide", "packaging": "Drums", "documentation": "Certificate of Analysis, Weight Certificate", "weighingSampling": "At loading port per industry standards"}',
   '[]',
   true,
   false

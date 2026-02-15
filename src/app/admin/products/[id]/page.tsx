@@ -12,7 +12,25 @@ import {
   Upload,
   X,
   Loader2,
+  GripVertical,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { AdminHeader } from "@/components/admin";
 import { Button, Card } from "@/components/ui";
 import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
@@ -39,6 +57,71 @@ const emptyGrade: ProductGrade = {
   packaging: "",
   origin: "",
 };
+
+function SortableSpecRow({
+  id,
+  spec,
+  index,
+  inputClass,
+  onUpdate,
+  onRemove,
+}: {
+  id: string;
+  spec: { key: string; value: string };
+  index: number;
+  inputClass: string;
+  onUpdate: (index: number, field: "key" | "value", value: string) => void;
+  onRemove: (index: number) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex gap-3 items-center">
+      <button
+        type="button"
+        className="p-1.5 cursor-grab active:cursor-grabbing text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors flex-shrink-0"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <input
+        type="text"
+        value={spec.key}
+        onChange={(e) => onUpdate(index, "key", e.target.value)}
+        placeholder="Key (e.g., Si)"
+        className={`${inputClass} flex-1`}
+      />
+      <input
+        type="text"
+        value={spec.value}
+        onChange={(e) => onUpdate(index, "value", e.target.value)}
+        placeholder="Value (e.g., 72-78%)"
+        className={`${inputClass} flex-1`}
+      />
+      <button
+        type="button"
+        onClick={() => onRemove(index)}
+        className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
 
 export default function AdminProductEditPage() {
   const params = useParams();
@@ -74,6 +157,26 @@ export default function AdminProductEditPage() {
   const [productImages, setProductImages] = useState<string[]>([]);
   const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
 
+  // Drag-to-reorder for specifications
+  const [specIdCounter, setSpecIdCounter] = useState(1);
+  const [specIds, setSpecIds] = useState<string[]>(["spec-0"]);
+
+  const specSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleSpecDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = specIds.indexOf(active.id as string);
+    const newIndex = specIds.indexOf(over.id as string);
+
+    setSpecifications(arrayMove(specifications, oldIndex, newIndex));
+    setSpecIds(arrayMove(specIds, oldIndex, newIndex));
+  };
+
   // Load product data from Supabase if editing
   useEffect(() => {
     if (!isNew) {
@@ -87,12 +190,12 @@ export default function AdminProductEditPage() {
           setShortDescription(product.shortDescription);
           setIsActive(product.isActive);
           setIsFeatured(product.isFeatured);
-          setSpecifications(
-            Object.entries(product.specifications).map(([key, value]) => ({
-              key,
-              value,
-            }))
+          const loadedSpecs = Object.entries(product.specifications).map(
+            ([key, value]) => ({ key, value })
           );
+          setSpecifications(loadedSpecs);
+          setSpecIds(loadedSpecs.map((_, i) => `spec-loaded-${i}`));
+          setSpecIdCounter(loadedSpecs.length);
           if (product.mmtaSpecs) {
             setMmtaSpecs({ ...product.mmtaSpecs });
           }
@@ -188,10 +291,13 @@ export default function AdminProductEditPage() {
 
   const addSpec = () => {
     setSpecifications([...specifications, { key: "", value: "" }]);
+    setSpecIds([...specIds, `spec-${specIdCounter}`]);
+    setSpecIdCounter((c) => c + 1);
   };
 
   const removeSpec = (index: number) => {
     setSpecifications(specifications.filter((_, i) => i !== index));
+    setSpecIds(specIds.filter((_, i) => i !== index));
   };
 
   const updateSpec = (
@@ -434,9 +540,14 @@ export default function AdminProductEditPage() {
         {/* Specifications */}
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
-              Specifications
-            </h3>
+            <div>
+              <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                Specifications
+              </h3>
+              <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                Drag to reorder specifications
+              </p>
+            </div>
             <Button
               variant="secondary"
               size="sm"
@@ -446,32 +557,30 @@ export default function AdminProductEditPage() {
               Add Spec
             </Button>
           </div>
-          <div className="space-y-3">
-            {specifications.map((spec, index) => (
-              <div key={index} className="flex gap-3 items-center">
-                <input
-                  type="text"
-                  value={spec.key}
-                  onChange={(e) => updateSpec(index, "key", e.target.value)}
-                  placeholder="Key (e.g., Si)"
-                  className={`${inputClass} flex-1`}
-                />
-                <input
-                  type="text"
-                  value={spec.value}
-                  onChange={(e) => updateSpec(index, "value", e.target.value)}
-                  placeholder="Value (e.g., 72-78%)"
-                  className={`${inputClass} flex-1`}
-                />
-                <button
-                  onClick={() => removeSpec(index)}
-                  className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+          <DndContext
+            sensors={specSensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleSpecDragEnd}
+          >
+            <SortableContext
+              items={specIds}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {specifications.map((spec, index) => (
+                  <SortableSpecRow
+                    key={specIds[index]}
+                    id={specIds[index]}
+                    spec={spec}
+                    index={index}
+                    inputClass={inputClass}
+                    onUpdate={updateSpec}
+                    onRemove={removeSpec}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         </Card>
 
         {/* MMTA Specifications */}

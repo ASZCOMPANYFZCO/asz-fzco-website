@@ -74,8 +74,8 @@
 @theme inline {
   --color-background: var(--color-bg-primary);
   --color-foreground: var(--color-text-primary);
-  --font-sans: var(--font-body), "Source Sans 3", system-ui, sans-serif;
-  --font-heading: var(--font-heading), "Playfair Display", Georgia, serif;
+  --font-sans: var(--font-body), "Inter", system-ui, sans-serif;
+  --font-heading: var(--font-heading), "Plus Jakarta Sans", system-ui, sans-serif;
 
   /* Custom Colors */
   --color-bg-primary: var(--color-bg-primary);
@@ -136,14 +136,14 @@ html {
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-family: var(--font-body), "Source Sans 3", system-ui, sans-serif;
+  font-family: var(--font-body), "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Heading font */
 h1, h2, h3, h4 {
-  font-family: var(--font-heading), "Playfair Display", Georgia, serif;
+  font-family: var(--font-heading), "Plus Jakarta Sans", system-ui, sans-serif;
 }
 
 /* Focus styles */

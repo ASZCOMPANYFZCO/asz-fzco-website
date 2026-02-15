@@ -36,7 +36,7 @@ const itemVariants = {
 /* Trade route nodes — positioned like a world map abstraction */
 const NODES = [
   { id: "dubai", x: 52, y: 42, label: "Dubai HQ", primary: true, delay: 0.8 },
-  { id: "london", x: 38, y: 22, label: "Europe", primary: false, delay: 1.0 },
+  { id: "europe", x: 38, y: 22, label: "Europe", primary: false, delay: 1.0 },
   { id: "mumbai", x: 60, y: 48, label: "South Asia", primary: false, delay: 1.1 },
   { id: "beijing", x: 72, y: 28, label: "East Asia", primary: false, delay: 1.2 },
   { id: "joburg", x: 44, y: 72, label: "Africa", primary: false, delay: 1.3 },
