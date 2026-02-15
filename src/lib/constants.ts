@@ -257,7 +257,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'ferro_alloy',
     shortDescription:
       'Premium ferro silicon for steel deoxidation, alloying, and casting applications.',
-    image: '',
+    image: '/images/products/ferro-silicon.jpeg',
     specifications: {
       Si: '72–78%',
       Al: '1–2%',
@@ -295,7 +295,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'ferro_alloy',
     shortDescription:
       'High-carbon and low-carbon ferro chrome for stainless steel and alloy production.',
-    image: '',
+    image: '/images/products/chrome.jpeg',
     specifications: {
       Cr: '60–70%',
       C: '4–10% (HC) / 0.1% max (LC)',
@@ -360,7 +360,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'ferro_alloy',
     shortDescription:
       'High-quality ferro manganese for steel production and alloying across grades.',
-    image: '',
+    image: '/images/products/ferro-manganese.jpeg',
     specifications: {
       Mn: '65–78%',
       C: '0.5–7%',
@@ -416,7 +416,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'ferro_alloy',
     shortDescription:
       'Combined silicon-manganese alloy for efficient steel production and deoxidation.',
-    image: '',
+    image: '/images/products/silico-manganese.jpeg',
     specifications: {
       Mn: '65–68%',
       Si: '16–21%',
@@ -474,7 +474,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'noble_alloy',
     shortDescription:
       'Ferro molybdenum for high-strength low-alloy steels and specialty applications.',
-    image: '',
+    image: '/images/products/ferro-molybdenum.jpeg',
     specifications: {
       Mo: '60–70%',
       C: '0.1% max',
@@ -521,7 +521,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'noble_alloy',
     shortDescription:
       'High-purity ferro vanadium for specialty and high-strength steel applications.',
-    image: '',
+    image: '/images/products/ferro-vanadium.jpeg',
     specifications: {
       V: '50–80%',
       C: '0.5% max',
@@ -549,7 +549,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'noble_alloy',
     shortDescription:
       'Ferro titanium for deoxidation and micro-alloying in steel production.',
-    image: '',
+    image: '/images/products/ferro-titanium.jpeg',
     specifications: {
       Ti: '25–70%',
       Al: '5–10%',
@@ -596,7 +596,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'noble_alloy',
     shortDescription:
       'Ferro tungsten for high-speed steels, tool steels, and wear-resistant alloys.',
-    image: '',
+    image: '/images/products/ferro-tungsten.jpeg',
     specifications: {
       W: '70–80%',
       C: '0.5% max',
@@ -634,7 +634,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'noble_alloy',
     shortDescription:
       'Ferro niobium for micro-alloying in HSLA steels and superalloy applications.',
-    image: '',
+    image: '/images/products/ferro-niobium.jpeg',
     specifications: {
       Nb: '60–70%',
       C: '0.1% max',
@@ -662,7 +662,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'noble_alloy',
     shortDescription:
       'Ferro boron for hardening steel and improving mechanical properties.',
-    image: '',
+    image: '/images/products/ferro-boron.jpeg',
     specifications: {
       B: '17–20%',
       C: '0.5% max',
@@ -692,7 +692,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'minor_metal',
     shortDescription:
       'Antimony metal and trioxide for flame retardants, batteries, and alloys.',
-    image: '',
+    image: '/images/products/antimony.jpeg',
     specifications: {
       Sb: '99.65%+',
       As: '0.1% max',
@@ -717,7 +717,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'minor_metal',
     shortDescription:
       'Aluminothermic and electrolytic chromium metal for superalloys and aerospace applications.',
-    image: '',
+    image: '/images/products/chromium.jpeg',
     specifications: {
       Cr: '99%+',
       Al: '0.5% max',
@@ -742,7 +742,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'minor_metal',
     shortDescription:
       'Cobalt metal for batteries, superalloys, and catalytic applications.',
-    image: '',
+    image: '/images/products/cobalt.jpeg',
     specifications: {
       Co: '99.8%+',
       Ni: '0.05% max',
@@ -767,7 +767,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'minor_metal',
     shortDescription:
       'Hafnium metal for nuclear, aerospace, and high-temperature applications.',
-    image: '',
+    image: '/images/products/hafnium.jpeg',
     specifications: {
       Hf: '97%+',
       Zr: '2.5% max',
@@ -792,7 +792,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'minor_metal',
     shortDescription:
       'Electrolytic manganese metal for special alloys and steel production.',
-    image: '',
+    image: '/images/products/manganese.jpeg',
     specifications: {
       Mn: '99.7%+',
       Fe: '0.01% max',
@@ -867,7 +867,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'minor_metal',
     shortDescription:
       'High-purity silicon metal for aluminium, chemical, and solar industries.',
-    image: '',
+    image: '/images/products/silicon.jpeg',
     specifications: {
       Si: '99%+',
       Fe: '0.4% max',
@@ -968,7 +968,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'minor_metal',
     shortDescription:
       'Yttrium metal for ceramics, phosphors, lasers, and superalloy applications.',
-    image: '',
+    image: '/images/products/yttrium.jpeg',
     specifications: {
       Y: '99.9%+',
       Fe: '0.01% max',
@@ -992,7 +992,7 @@ export const MOCK_PRODUCTS: Product[] = [
     category: 'minor_metal',
     shortDescription:
       'Zirconium metal for nuclear, chemical processing, and corrosion-resistant applications.',
-    image: '',
+    image: '/images/products/zirconium.jpeg',
     specifications: {
       Zr: '99.5%+',
       Hf: '1% max',
