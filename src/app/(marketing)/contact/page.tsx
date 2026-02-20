@@ -147,30 +147,16 @@ export default function ContactPage() {
             Our Location
           </h2>
           <div className="rounded-xl overflow-hidden border border-[var(--color-border)] h-[400px] bg-[var(--color-bg-secondary)]">
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
-                  <MapPin className="h-8 w-8 text-[var(--color-accent)]" />
-                </div>
-                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                  {SITE_CONFIG.address.area}, {SITE_CONFIG.address.city}
-                </h3>
-                <p className="text-[var(--color-text-secondary)] mb-4">
-                  {SITE_CONFIG.address.full}
-                </p>
-                <a
-                  href={`https://maps.google.com/?q=${encodeURIComponent(SITE_CONFIG.address.full)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[var(--color-accent)] hover:underline text-sm"
-                >
-                  Open in Google Maps &rarr;
-                </a>
-                <p className="text-xs text-[var(--color-text-muted)] mt-4">
-                  Google Maps will be embedded here with API key
-                </p>
-              </div>
-            </div>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3612.9!2d55.3781!3d25.1173!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f654a11111111%3A0x0!2sDubai+Silicon+Oasis!5e0!3m2!1sen!2sae!4v1700000000000"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="ASZ Company FZCO Location - Dubai Silicon Oasis"
+            />
           </div>
         </div>
       </section>
