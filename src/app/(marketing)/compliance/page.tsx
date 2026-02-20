@@ -1,72 +1,60 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  FileText,
-  Download,
   Shield,
   Award,
   CheckCircle,
+  ArrowRight,
+  BookOpen,
+  Scale,
+  Handshake,
+  HardHat,
+  Users,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared";
-import { Button, Card, Badge } from "@/components/ui";
-// Document type labels kept inline since all are compliance docs
+import { Button } from "@/components/ui";
 
 export const metadata: Metadata = {
-  title: "Compliance & Documentation",
+  title: "Compliance & Values",
   description:
-    "Access ASZ Company's compliance forms, certifications, and documentation. Download MSDS, quality certificates, and company brochures.",
+    "ASZ Company FZCO's compliance policies and values. Our commitment to ethical trading, anti-corruption, and responsible business practices.",
 };
 
-const documents = [
+const compliancePages = [
   {
-    id: "1",
     title: "Code of Conduct",
     description:
-      "ASZ Company's code of conduct outlining our ethical standards, business principles, and expectations for employees and partners.",
-    type: "compliance",
-    fileSize: "377 KB",
-    fileType: "PDF",
-    href: "/documents/code-of-conduct.pdf",
+      "Our Code of Conduct sets out the ethical standards and business principles that guide every interaction, ensuring integrity, fairness, and accountability across all operations.",
+    href: "/compliance/code-of-conduct",
+    icon: BookOpen,
   },
   {
-    id: "2",
     title: "Anti-Corruption Program",
     description:
-      "Our comprehensive anti-corruption program detailing policies, procedures, and controls to prevent corrupt practices.",
-    type: "compliance",
-    fileSize: "126 KB",
-    fileType: "PDF",
-    href: "/documents/anti-corruption-program.pdf",
+      "Our comprehensive anti-corruption framework outlines the policies, procedures, and controls we maintain to prevent corrupt practices throughout our business activities.",
+    href: "/compliance/anti-corruption",
+    icon: Scale,
   },
   {
-    id: "3",
     title: "Anti-Bribery Program",
     description:
-      "ASZ Company's anti-bribery program ensuring compliance with international anti-bribery laws and regulations.",
-    type: "compliance",
-    fileSize: "118 KB",
-    fileType: "PDF",
-    href: "/documents/anti-bribery-program.pdf",
+      "ASZ Company maintains a zero-tolerance approach to bribery, ensuring full compliance with international anti-bribery laws including the UK Bribery Act and US FCPA.",
+    href: "/compliance/anti-bribery",
+    icon: Handshake,
   },
   {
-    id: "4",
-    title: "COSHH Compliance Plan",
+    title: "COSHH Compliance",
     description:
-      "Control of Substances Hazardous to Health compliance plan for safe handling and management of metals and alloys.",
-    type: "compliance",
-    fileSize: "104 KB",
-    fileType: "PDF",
-    href: "/documents/coshh-compliance-plan.pdf",
+      "Our Control of Substances Hazardous to Health compliance plan ensures the safe handling, storage, and management of metals and alloys across the supply chain.",
+    href: "/compliance/coshh",
+    icon: HardHat,
   },
   {
-    id: "5",
     title: "Modern Slavery & Human Trafficking Policy",
     description:
-      "Our policy and commitment to preventing modern slavery and human trafficking across our supply chain and operations.",
-    type: "compliance",
-    fileSize: "337 KB",
-    fileType: "PDF",
-    href: "/documents/modern-slavery-policy.pdf",
+      "Our commitment to preventing modern slavery and human trafficking across our operations and supply chain, ensuring ethical sourcing and responsible trade practices.",
+    href: "/compliance/modern-slavery",
+    icon: Users,
   },
 ];
 
@@ -75,11 +63,6 @@ const certifications = [
     name: "MMTA Member",
     description: "Minor Metals Trade Association",
     icon: Award,
-  },
-  {
-    name: "DMCC Licensed",
-    description: "Dubai Multi Commodities Centre",
-    icon: Shield,
   },
   {
     name: "FZCO Registered",
@@ -92,8 +75,8 @@ export default function CompliancePage() {
   return (
     <>
       <PageHeader
-        title="Compliance & Documentation"
-        subtitle="Access our compliance forms, certifications, and product documentation. We maintain the highest standards of transparency and regulatory compliance."
+        title="Compliance & Values"
+        subtitle="Our values are reflected in our policies and practices. We are committed to maintaining the highest standards of business ethics, transparency, and regulatory compliance."
         breadcrumbs={[{ label: "Compliance" }]}
       />
 
@@ -103,7 +86,7 @@ export default function CompliancePage() {
           <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-8 text-center">
             Our Certifications & Memberships
           </h2>
-          <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {certifications.map((cert) => {
               const Icon = cert.icon;
               return (
@@ -127,63 +110,48 @@ export default function CompliancePage() {
         </div>
       </section>
 
-      {/* Documents Section */}
+      {/* Compliance Policies */}
       <section className="section">
         <div className="container-custom">
-          <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-8">
-            Downloadable Documents
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {documents.map((doc) => (
-              <Card key={doc.id} hover className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-[var(--color-accent-light)] flex items-center justify-center flex-shrink-0">
-                  <FileText className="h-6 w-6 text-[var(--color-accent)]" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <h3 className="font-semibold text-[var(--color-text-primary)]">
-                      {doc.title}
-                    </h3>
-                    <Badge variant="default" size="sm">
-                      Compliance
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                    {doc.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-[var(--color-text-muted)]">
-                      {doc.fileType} • {doc.fileSize}
-                    </span>
-                    <a
-                      href={doc.href}
-                      download
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-accent)] hover:underline"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download
-                    </a>
-                  </div>
-                </div>
-              </Card>
-            ))}
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
+              Our Policies & Standards
+            </h2>
+            <p className="text-lg text-[var(--color-text-secondary)]">
+              Each of our policies reflects our dedication to responsible and
+              ethical business practices across every aspect of our operations.
+            </p>
           </div>
 
-          {/* Note */}
-          <div className="mt-8 p-6 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              <strong className="text-[var(--color-text-primary)]">Note:</strong>{" "}
-              All documents are provided in PDF format. If you require additional
-              documentation or have specific compliance requirements, please{" "}
-              <Link
-                href="/contact"
-                className="text-[var(--color-accent)] hover:underline"
-              >
-                contact our team
-              </Link>
-              .
-            </p>
+          <div className="grid md:grid-cols-2 gap-6">
+            {compliancePages.map((page) => {
+              const Icon = page.icon;
+              return (
+                <Link
+                  key={page.href}
+                  href={page.href}
+                  className="group block p-6 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-all duration-300"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-[var(--color-accent-light)] flex items-center justify-center flex-shrink-0 group-hover:bg-[var(--color-accent)] transition-colors">
+                      <Icon className="h-6 w-6 text-[var(--color-accent)] group-hover:text-white transition-colors" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2 group-hover:text-[var(--color-accent)] transition-colors">
+                        {page.title}
+                      </h3>
+                      <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                        {page.description}
+                      </p>
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-accent)]">
+                        Read more
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -196,10 +164,11 @@ export default function CompliancePage() {
               Our Commitment to Compliance
             </h2>
             <p className="text-[var(--color-text-secondary)] mb-8">
-              At ASZ Company, we are committed to maintaining the highest standards
-              of business ethics and regulatory compliance. We work closely with
-              banks, financial institutions, and large corporations, ensuring all
-              our operations meet international standards and local regulations.
+              At ASZ Company, we are committed to maintaining the highest
+              standards of business ethics and regulatory compliance. We work
+              closely with banks, financial institutions, and large
+              corporations, ensuring all our operations meet international
+              standards and local regulations.
             </p>
             <div className="grid sm:grid-cols-3 gap-6 text-left">
               <div className="p-4 rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border)]">
@@ -237,12 +206,11 @@ export default function CompliancePage() {
         <div className="container-custom">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
-              Need Additional Documentation?
+              Need Additional Information?
             </h2>
             <p className="text-[var(--color-text-secondary)] mb-6">
-              If you require specific compliance documents, certificates, or
-              custom documentation for your business needs, our team is here to
-              help.
+              If you require specific compliance information, certificates, or
+              have questions about our policies, our team is here to help.
             </p>
             <Button size="lg">
               <Link href="/contact">Contact Our Team</Link>

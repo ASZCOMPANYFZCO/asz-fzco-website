@@ -11,11 +11,11 @@ export const SITE_CONFIG = {
   founded: '2022',
   businessHours: 'Mon–Fri 9:00 AM – 6:00 PM',
   address: {
-    street: '150 HDS Tower',
-    area: 'JLT',
+    street: 'DDP, Building A1',
+    area: 'Dubai Silicon Oasis',
     city: 'Dubai',
     country: 'United Arab Emirates',
-    full: '150 HDS Tower, JLT, Dubai, UAE',
+    full: 'Dubai Silicon Oasis, DDP, Building A1, Dubai, United Arab Emirates',
   },
   social: {
     linkedin: 'https://www.linkedin.com/company/asz-company-fzco/',
@@ -36,12 +36,14 @@ export const PRODUCT_CATEGORIES = {
   FERRO_ALLOY: 'ferro_alloy',
   NOBLE_ALLOY: 'noble_alloy',
   MINOR_METAL: 'minor_metal',
+  OTHER: 'other',
 } as const;
 
 export const PRODUCT_CATEGORY_LABELS: Record<string, string> = {
   [PRODUCT_CATEGORIES.FERRO_ALLOY]: 'Ferro Alloys',
   [PRODUCT_CATEGORIES.NOBLE_ALLOY]: 'Noble Alloys',
   [PRODUCT_CATEGORIES.MINOR_METAL]: 'Minor Metals',
+  [PRODUCT_CATEGORIES.OTHER]: 'Other Products',
 };
 
 export const BLOG_CATEGORIES = [

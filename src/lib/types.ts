@@ -20,7 +20,7 @@ export interface ProductGrade {
   origin?: string;
 }
 
-export type ProductCategory = 'ferro_alloy' | 'noble_alloy' | 'minor_metal';
+export type ProductCategory = 'ferro_alloy' | 'noble_alloy' | 'minor_metal' | 'other';
 
 export interface Product {
   id: string;

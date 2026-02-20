@@ -188,7 +188,7 @@ export default function PrivacyPage() {
                   general@aszcompany.com
                 </a>
               </li>
-              <li>Address: 150 HDS Tower, JLT, Dubai, UAE</li>
+              <li>Address: Dubai Silicon Oasis, DDP, Building A1, Dubai, United Arab Emirates</li>
             </ul>
           </div>
         </div>

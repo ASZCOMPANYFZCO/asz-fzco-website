@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Target,
@@ -97,30 +98,15 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Decorative visual instead of image placeholder */}
-            <div className="relative aspect-[4/3] rounded-xl bg-gradient-to-br from-[var(--color-bg-secondary)] to-[var(--color-bg-tertiary)] border border-[var(--color-border)] overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-28 h-28 mx-auto mb-4 rounded-2xl bg-[var(--color-accent-light)] flex items-center justify-center rotate-6">
-                    <span className="text-4xl font-bold text-[var(--color-accent)] -rotate-6">
-                      ASZ
-                    </span>
-                  </div>
-                  <p className="text-lg font-semibold text-[var(--color-text-primary)]">
-                    Est. 2022
-                  </p>
-                  <p className="text-sm text-[var(--color-text-muted)]">
-                    Dubai, UAE
-                  </p>
-                </div>
-              </div>
-              {/* Decorative grid pattern */}
-              <div
-                className="absolute inset-0 opacity-[0.03]"
-                style={{
-                  backgroundImage: `linear-gradient(var(--color-text-primary) 1px, transparent 1px), linear-gradient(90deg, var(--color-text-primary) 1px, transparent 1px)`,
-                  backgroundSize: "40px 40px",
-                }}
+            {/* Company Image — replace /images/asz-logo.png with a custom image */}
+            <div className="relative aspect-[4/3] rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] overflow-hidden">
+              <Image
+                src="/images/asz-logo.png"
+                alt="ASZ Company FZCO"
+                fill
+                className="object-contain p-8"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
               />
             </div>
           </div>

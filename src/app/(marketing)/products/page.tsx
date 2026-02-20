@@ -9,7 +9,7 @@ import { getProducts } from "@/lib/data";
 import type { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-type CategoryFilter = "all" | "ferro_alloy" | "noble_alloy" | "minor_metal";
+type CategoryFilter = "all" | "ferro_alloy" | "noble_alloy" | "minor_metal" | "other";
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -69,7 +69,7 @@ export default function ProductsPage() {
 
             {/* Category Tabs */}
             <div className="flex gap-2 p-1 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-              {(["all", "ferro_alloy", "noble_alloy", "minor_metal"] as const).map(
+              {(["all", "ferro_alloy", "noble_alloy", "minor_metal", "other"] as const).map(
                 (category) => (
                   <button
                     key={category}
