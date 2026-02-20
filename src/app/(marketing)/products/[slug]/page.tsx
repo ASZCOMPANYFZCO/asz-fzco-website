@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight, Package, FileText, Beaker, Factory, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared";
 import { ProductEnquiryForm, ProductCard } from "@/components/products";
@@ -98,17 +99,30 @@ export default function ProductPage() {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
               {/* Product Image */}
-              <div className="aspect-video rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
-                    <span className="text-4xl font-bold text-[var(--color-accent)]">
-                      {product.name.charAt(0)}
-                    </span>
+              <div className="relative aspect-video rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] overflow-hidden">
+                {product.image ? (
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 66vw"
+                    priority
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
+                        <span className="text-4xl font-bold text-[var(--color-accent)]">
+                          {product.name.charAt(0)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[var(--color-text-muted)]">
+                        Product Image
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm text-[var(--color-text-muted)]">
-                    Product Image Placeholder
-                  </p>
-                </div>
+                )}
               </div>
 
               {/* Specifications */}

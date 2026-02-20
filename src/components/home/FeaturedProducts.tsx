@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ArrowUpRight, Loader2 } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
@@ -78,20 +79,30 @@ export function FeaturedProducts() {
                 className="group"
               >
                 <div className="card card-hover h-full flex flex-col">
-                  {/* Product Image Placeholder */}
+                  {/* Product Image */}
                   <div className="relative aspect-[4/3] rounded-lg bg-[var(--color-bg-tertiary)] mb-4 overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
-                          <span className="text-2xl font-bold text-[var(--color-accent)]">
-                            {product.name.charAt(0)}
-                          </span>
+                    {product.image ? (
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
+                            <span className="text-2xl font-bold text-[var(--color-accent)]">
+                              {product.name.charAt(0)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[var(--color-text-muted)]">
+                            Product Image
+                          </p>
                         </div>
-                        <p className="text-xs text-[var(--color-text-muted)]">
-                          Product Image
-                        </p>
                       </div>
-                    </div>
+                    )}
 
                     {/* Category Badge */}
                     <Badge

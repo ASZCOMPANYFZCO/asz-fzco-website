@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui";
 import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
@@ -10,6 +11,7 @@ interface ProductCardProps {
     slug: string;
     category: string;
     shortDescription: string;
+    image?: string;
     specifications: Record<string, string>;
   };
 }
@@ -18,20 +20,30 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/products/${product.slug}`} className="group">
       <div className="h-full flex flex-col bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl overflow-hidden hover:border-[var(--color-accent)] hover:shadow-lg transition-all duration-300">
-        {/* Product Image Placeholder */}
+        {/* Product Image */}
         <div className="relative aspect-[4/3] bg-[var(--color-bg-tertiary)]">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
-                <span className="text-2xl font-bold text-[var(--color-accent)]">
-                  {product.name.charAt(0)}
-                </span>
+          {product.image ? (
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
+                  <span className="text-2xl font-bold text-[var(--color-accent)]">
+                    {product.name.charAt(0)}
+                  </span>
+                </div>
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  Product Image
+                </p>
               </div>
-              <p className="text-xs text-[var(--color-text-muted)]">
-                Product Image
-              </p>
             </div>
-          </div>
+          )}
 
           {/* Category Badge */}
           <Badge variant="primary" className="absolute top-3 left-3">
