@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { TRUST_STATS } from "@/lib/constants";
-import { getProductCount } from "@/lib/data";
 
 function AnimatedCounter({
   value,
@@ -44,10 +43,9 @@ function AnimatedCounter({
   );
 }
 
-export function TrustStats() {
+export function TrustStats({ productCount = 24 }: { productCount?: number }) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
-  const [productCount, setProductCount] = useState(24);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -64,13 +62,6 @@ export function TrustStats() {
     }
 
     return () => observer.disconnect();
-  }, []);
-
-  // Fetch live product count from Supabase
-  useEffect(() => {
-    getProductCount().then((count) => {
-      if (count > 0) setProductCount(count);
-    });
   }, []);
 
   return (

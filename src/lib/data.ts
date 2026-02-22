@@ -425,26 +425,11 @@ export async function serverGetProductBySlug(slug: string): Promise<Product | nu
   return products.find((p) => p.slug === slug) ?? null;
 }
 
-export const serverGetProductCount = unstable_cache(
-  async (): Promise<number> => {
-    const client = createServerSupabaseClient();
-    if (!client) return 0;
-
-    const { count, error } = await client
-      .from("products")
-      .select("*", { count: "exact", head: true })
-      .eq("is_active", true);
-
-    if (error) {
-      console.error("Error counting products (server):", error);
-      return 0;
-    }
-
-    return count || 0;
-  },
-  ["product-count"],
-  { revalidate: CACHE_TTL }
-);
+export async function serverGetProductCount(): Promise<number> {
+  // Derive count from the cached products list — no extra DB connection
+  const products = await serverGetProducts();
+  return products.length;
+}
 
 export const serverGetBlogPosts = unstable_cache(
   async (): Promise<DBBlogPost[]> => {

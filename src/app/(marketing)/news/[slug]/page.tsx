@@ -13,7 +13,7 @@ import {
 import { BlogCard } from "@/components/blog";
 import { Button, Badge, Card } from "@/components/ui";
 import { BLOG_CATEGORIES, SITE_CONFIG } from "@/lib/constants";
-import { serverGetBlogPostBySlug, serverGetBlogPosts } from "@/lib/data";
+import { serverGetBlogPosts } from "@/lib/data";
 import type { DBBlogPost } from "@/lib/data";
 import { formatDate, getReadingTime } from "@/lib/utils";
 
@@ -42,11 +42,9 @@ export default async function ArticlePage({
 }) {
   const { slug } = await params;
 
-  // Fetch post and all posts in parallel
-  const [post, allPosts] = await Promise.all([
-    serverGetBlogPostBySlug(slug),
-    serverGetBlogPosts(),
-  ]);
+  // Single cached call — post + related posts from one list
+  const allPosts = await serverGetBlogPosts();
+  const post = allPosts.find((p) => p.slug === slug) ?? null;
 
   if (!post) {
     notFound();
