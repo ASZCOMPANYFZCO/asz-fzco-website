@@ -18,6 +18,7 @@ export function MMTAMembership() {
               alt="MMTA - Minor Metals Trade Association"
               width={200}
               height={80}
+              loading="lazy"
               className="h-20 sm:h-24 w-auto logo-mmta-auto"
             />
           </a>

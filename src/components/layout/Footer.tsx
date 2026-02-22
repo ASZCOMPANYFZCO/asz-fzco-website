@@ -61,6 +61,7 @@ export function Footer() {
                 alt="MMTA Member"
                 width={180}
                 height={72}
+                loading="lazy"
                 className="h-12 w-auto logo-mmta-auto"
               />
             </a>

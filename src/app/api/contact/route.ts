@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { quoteFormSchema } from '@/lib/validations';
+import { createServerSupabaseClient } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,6 +66,25 @@ export async function POST(request: NextRequest) {
         html: confirmationHtml,
       }),
     ]);
+
+    // Save enquiry to database (best-effort — don't fail if DB is unavailable)
+    try {
+      const supabase = createServerSupabaseClient();
+      if (supabase) {
+        await supabase.from('enquiries').insert({
+          full_name: data.fullName,
+          email: data.email,
+          phone: data.phone || null,
+          company: data.company || null,
+          country: data.country || null,
+          products: data.products,
+          quantity: data.quantity || null,
+          message: data.additionalNotes || null,
+        });
+      }
+    } catch (dbError) {
+      console.error('[Contact API] Failed to save enquiry to database:', dbError);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
