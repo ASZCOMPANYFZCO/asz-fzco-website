@@ -1,7 +1,4 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -12,76 +9,21 @@ import {
   Linkedin,
   Facebook,
   ArrowRight,
-  Loader2,
 } from "lucide-react";
 import { BlogCard } from "@/components/blog";
 import { Button, Badge, Card } from "@/components/ui";
 import { BLOG_CATEGORIES, SITE_CONFIG } from "@/lib/constants";
-import { getBlogPostBySlug, getBlogPosts } from "@/lib/data";
+import { serverGetBlogPostBySlug, serverGetBlogPosts } from "@/lib/data";
 import type { DBBlogPost } from "@/lib/data";
 import { formatDate, getReadingTime } from "@/lib/utils";
 
-export default function ArticlePage() {
-  const params = useParams();
-  const slug = params.slug as string;
-  const [post, setPost] = useState<DBBlogPost | null>(null);
-  const [relatedPosts, setRelatedPosts] = useState<DBBlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+function getCategoryLabel(categoryValue: string) {
+  const category = BLOG_CATEGORIES.find((c) => c.value === categoryValue);
+  return category?.label || categoryValue;
+}
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      const p = await getBlogPostBySlug(slug);
-      setPost(p);
-
-      if (p) {
-        const allPosts = await getBlogPosts();
-        setRelatedPosts(
-          allPosts
-            .filter((rp) => rp.category === p.category && rp.id !== p.id)
-            .slice(0, 2)
-        );
-      }
-      setLoading(false);
-    }
-    load();
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
-            Article Not Found
-          </h1>
-          <Link href="/news">
-            <Button variant="outline">Back to News</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const getCategoryLabel = (categoryValue: string) => {
-    const category = BLOG_CATEGORIES.find((c) => c.value === categoryValue);
-    return category?.label || categoryValue;
-  };
-
-  const articleContent =
-    post.content ||
-    `<p>${post.excerpt}</p><p>Full article content coming soon.</p>`;
-
-  const shareUrl = `${SITE_CONFIG.url}/news/${post.slug}`;
-
-  const adaptPost = (p: DBBlogPost) => ({
+function adaptPost(p: DBBlogPost) {
+  return {
     id: p.id,
     title: p.title,
     slug: p.slug,
@@ -90,7 +32,35 @@ export default function ArticlePage() {
     featuredImage: p.featured_image || "",
     publishedAt: p.published_at || p.created_at,
     author: p.author,
-  });
+  };
+}
+
+export default async function ArticlePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
+  // Fetch post and all posts in parallel
+  const [post, allPosts] = await Promise.all([
+    serverGetBlogPostBySlug(slug),
+    serverGetBlogPosts(),
+  ]);
+
+  if (!post) {
+    notFound();
+  }
+
+  const relatedPosts = allPosts
+    .filter((rp) => rp.category === post.category && rp.id !== post.id)
+    .slice(0, 2);
+
+  const articleContent =
+    post.content ||
+    `<p>${post.excerpt}</p><p>Full article content coming soon.</p>`;
+
+  const shareUrl = `${SITE_CONFIG.url}/news/${post.slug}`;
 
   return (
     <>

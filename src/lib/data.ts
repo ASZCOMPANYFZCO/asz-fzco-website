@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from "./supabase";
+import { supabase, isSupabaseConfigured, createServerSupabaseClient } from "./supabase";
 import type { Product, ProductCategory } from "./types";
 
 // Timeout helper — ensures Supabase calls never hang forever
@@ -383,4 +383,99 @@ export async function createEnquiry(enquiry: {
 }) {
   if (!isSupabaseConfigured()) return { data: null, error: new Error("Supabase not configured") };
   return supabase.from("enquiries").insert(enquiry).select().single();
+}
+
+// ============================================================
+// SERVER-SAFE DATA FUNCTIONS
+// These create a fresh Supabase client per call so they can
+// be used safely in Server Components (no shared singleton).
+// ============================================================
+
+export async function serverGetProducts(): Promise<Product[]> {
+  const client = createServerSupabaseClient();
+  if (!client) return [];
+
+  const { data, error } = await client
+    .from("products")
+    .select("*")
+    .eq("is_active", true)
+    .order("name");
+
+  if (error) {
+    console.error("Error fetching products (server):", error);
+    return [];
+  }
+
+  return (data as DBProduct[]).map(dbProductToProduct);
+}
+
+export async function serverGetProductBySlug(slug: string): Promise<Product | null> {
+  const client = createServerSupabaseClient();
+  if (!client) return null;
+
+  const { data, error } = await client
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error) {
+    console.error("Error fetching product (server):", error);
+    return null;
+  }
+
+  return dbProductToProduct(data as DBProduct);
+}
+
+export async function serverGetProductCount(): Promise<number> {
+  const client = createServerSupabaseClient();
+  if (!client) return 0;
+
+  const { count, error } = await client
+    .from("products")
+    .select("*", { count: "exact", head: true })
+    .eq("is_active", true);
+
+  if (error) {
+    console.error("Error counting products (server):", error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
+export async function serverGetBlogPosts(): Promise<DBBlogPost[]> {
+  const client = createServerSupabaseClient();
+  if (!client) return [];
+
+  const { data, error } = await client
+    .from("blog_posts")
+    .select("*")
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching blog posts (server):", error);
+    return [];
+  }
+
+  return data as DBBlogPost[];
+}
+
+export async function serverGetBlogPostBySlug(slug: string): Promise<DBBlogPost | null> {
+  const client = createServerSupabaseClient();
+  if (!client) return null;
+
+  const { data, error } = await client
+    .from("blog_posts")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error) {
+    console.error("Error fetching blog post (server):", error);
+    return null;
+  }
+
+  return data as DBBlogPost;
 }

@@ -1,30 +1,16 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Calendar, Clock, Loader2 } from "lucide-react";
+import { ArrowRight, Calendar, Clock } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { BLOG_CATEGORIES } from "@/lib/constants";
-import { getBlogPosts } from "@/lib/data";
 import type { DBBlogPost } from "@/lib/data";
 import { formatDateShort, getReadingTime } from "@/lib/utils";
 
-export function LatestNews() {
-  const [posts, setPosts] = useState<DBBlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+function getCategoryLabel(categoryValue: string) {
+  const category = BLOG_CATEGORIES.find((c) => c.value === categoryValue);
+  return category?.label || categoryValue;
+}
 
-  useEffect(() => {
-    getBlogPosts().then((data) => {
-      setPosts(data.slice(0, 3));
-      setLoading(false);
-    });
-  }, []);
-
-  const getCategoryLabel = (categoryValue: string) => {
-    const category = BLOG_CATEGORIES.find((c) => c.value === categoryValue);
-    return category?.label || categoryValue;
-  };
-
+export function LatestNews({ posts }: { posts: DBBlogPost[] }) {
   return (
     <section className="section bg-[var(--color-bg-secondary)]">
       <div className="container-custom">
@@ -47,11 +33,7 @@ export function LatestNews() {
         </div>
 
         {/* Posts Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
-          </div>
-        ) : posts.length > 0 ? (
+        {posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((post, index) => (
               <Link

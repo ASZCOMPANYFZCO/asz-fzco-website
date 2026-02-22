@@ -1,65 +1,33 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, Package, FileText, Beaker, Factory, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Package, Beaker, Factory } from "lucide-react";
 import { PageHeader } from "@/components/shared";
 import { ProductEnquiryForm, ProductCard } from "@/components/products";
-import { Button, Badge, Card } from "@/components/ui";
+import { Button, Card } from "@/components/ui";
 import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
-import { getProductBySlug, getProducts } from "@/lib/data";
-import type { Product } from "@/lib/types";
+import { serverGetProductBySlug, serverGetProducts } from "@/lib/data";
 
-export default function ProductPage() {
-  const params = useParams();
-  const slug = params.slug as string;
-  const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
-  useEffect(() => {
-    async function loadProduct() {
-      setLoading(true);
-      const p = await getProductBySlug(slug);
-      setProduct(p);
-
-      if (p) {
-        const allProducts = await getProducts();
-        setRelatedProducts(
-          allProducts
-            .filter((rp) => rp.category === p.category && rp.id !== p.id)
-            .slice(0, 3)
-        );
-      }
-      setLoading(false);
-    }
-    loadProduct();
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
-      </div>
-    );
-  }
+  // Fetch product and all products in parallel
+  const [product, allProducts] = await Promise.all([
+    serverGetProductBySlug(slug),
+    serverGetProducts(),
+  ]);
 
   if (!product) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
-            Product Not Found
-          </h1>
-          <Link href="/products">
-            <Button variant="outline">Back to Products</Button>
-          </Link>
-        </div>
-      </div>
-    );
+    notFound();
   }
+
+  const relatedProducts = allProducts
+    .filter((rp) => rp.category === product.category && rp.id !== product.id)
+    .slice(0, 3);
 
   const applications = [
     "Steel Manufacturing",

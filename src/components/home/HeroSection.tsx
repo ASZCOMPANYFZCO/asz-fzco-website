@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { ArrowRight, Globe, Shield, Boxes } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui";
-import { getProductCount } from "@/lib/data";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -228,15 +227,8 @@ function TradeNetworkVisual() {
   );
 }
 
-export function HeroSection() {
+export function HeroSection({ productCount = 24 }: { productCount?: number }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const [productCount, setProductCount] = useState(24);
-
-  useEffect(() => {
-    getProductCount().then((count) => {
-      if (count > 0) setProductCount(count);
-    });
-  }, []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
