@@ -126,6 +126,17 @@ export default function AdminBlogEditPage() {
         return;
       }
 
+      // Verify the save actually persisted
+      if (!isNew) {
+        const verification = await getBlogPostById(postId);
+        if (verification && verification.title !== title.trim()) {
+          console.error("[handleSave] VERIFICATION FAILED! Saved title:", title.trim(), "but DB still has:", verification.title);
+          alert("Warning: The save appeared to succeed, but the data did not persist. This is likely a Supabase RLS issue. Please check your Supabase dashboard → RLS policies.");
+          return;
+        }
+        console.log("[handleSave] Verification passed — data persisted correctly");
+      }
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
 

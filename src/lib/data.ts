@@ -169,13 +169,18 @@ export async function upsertProduct(product: {
 
   try {
     if (product.id) {
-      console.log("[upsertProduct] Updating product:", product.id);
+      console.log("[upsertProduct] Updating product:", product.id, "payload:", JSON.stringify(payload).slice(0, 200));
       const result = await withTimeout(
-        supabase.from("products").update(payload).eq("id", product.id),
+        supabase.from("products").update(payload).eq("id", product.id).select(),
         10000
       );
-      console.log("[upsertProduct] Update result:", { error: result.error, status: result.status });
-      return { data: { id: product.id, ...payload } as Record<string, unknown>, error: result.error };
+      const rowCount = result.data ? result.data.length : 0;
+      console.log("[upsertProduct] Update result:", { error: result.error, status: result.status, rowsAffected: rowCount });
+      if (rowCount === 0 && !result.error) {
+        console.warn("[upsertProduct] WARNING: 0 rows updated! This likely means RLS policies are blocking writes. Check Supabase RLS policies.");
+        return { data: null, error: new Error("Update failed: 0 rows affected. Your Supabase RLS policies may be blocking writes. Please check your Supabase dashboard → Authentication → Policies.") };
+      }
+      return { data: result.data?.[0] ?? { id: product.id, ...payload } as Record<string, unknown>, error: result.error };
     } else {
       console.log("[upsertProduct] Inserting new product");
       const result = await withTimeout(
@@ -297,11 +302,16 @@ export async function upsertBlogPost(post: {
       console.log("[upsertBlogPost] Updating post:", post.id);
       const { id, ...postData } = post;
       const result = await withTimeout(
-        supabase.from("blog_posts").update(postData).eq("id", post.id),
+        supabase.from("blog_posts").update(postData).eq("id", post.id).select(),
         10000
       );
-      console.log("[upsertBlogPost] Update result:", { error: result.error, status: result.status });
-      return { data: { id: post.id, ...postData } as Record<string, unknown>, error: result.error };
+      const rowCount = result.data ? result.data.length : 0;
+      console.log("[upsertBlogPost] Update result:", { error: result.error, status: result.status, rowsAffected: rowCount });
+      if (rowCount === 0 && !result.error) {
+        console.warn("[upsertBlogPost] WARNING: 0 rows updated! RLS policies may be blocking writes.");
+        return { data: null, error: new Error("Update failed: 0 rows affected. Your Supabase RLS policies may be blocking writes.") };
+      }
+      return { data: result.data?.[0] ?? { id: post.id, ...postData } as Record<string, unknown>, error: result.error };
     } else {
       console.log("[upsertBlogPost] Inserting new post");
       const result = await withTimeout(

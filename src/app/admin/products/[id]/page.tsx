@@ -283,6 +283,17 @@ export default function AdminProductEditPage() {
         return;
       }
 
+      // Verify the save actually persisted by re-reading from DB
+      if (!isNew) {
+        const verification = await getProductById(productId);
+        if (verification && verification.name !== name.trim()) {
+          console.error("[handleSave] VERIFICATION FAILED! Saved name:", name.trim(), "but DB still has:", verification.name);
+          alert("Warning: The save appeared to succeed, but the data did not persist in the database. This is likely a Supabase RLS (Row Level Security) issue. Please check your Supabase dashboard → Table Editor → products → RLS policies and ensure UPDATE is allowed.");
+          return;
+        }
+        console.log("[handleSave] Verification passed — data persisted correctly");
+      }
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
 
