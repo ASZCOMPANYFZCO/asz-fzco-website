@@ -11,11 +11,13 @@ import {
   ImageIcon,
   X,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { AdminHeader } from "@/components/admin";
 import { Button, Card } from "@/components/ui";
 import { BLOG_CATEGORIES } from "@/lib/constants";
 import { getBlogPostById, upsertBlogPost } from "@/lib/data";
+import { uploadImage } from "@/lib/storage";
 
 export default function AdminBlogEditPage() {
   const params = useParams();
@@ -35,6 +37,7 @@ export default function AdminBlogEditPage() {
   const [content, setContent] = useState("");
   const [status, setStatus] = useState<string>("draft");
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [author, setAuthor] = useState("ASZ Company FZCO");
   const [publishedAt, setPublishedAt] = useState(
     new Date().toISOString().split("T")[0]
@@ -152,15 +155,19 @@ export default function AdminBlogEditPage() {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setFeaturedImage(event.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    setUploadingImage(true);
+    try {
+      const url = await uploadImage(file, "blog");
+      setFeaturedImage(url);
+    } catch (err) {
+      alert(`Image upload failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setUploadingImage(false);
+    }
     e.target.value = "";
   };
 
@@ -438,14 +445,25 @@ export default function AdminBlogEditPage() {
               ) : (
                 <div
                   onClick={() =>
-                    document.getElementById("featured-img-upload")?.click()
+                    !uploadingImage && document.getElementById("featured-img-upload")?.click()
                   }
-                  className="aspect-video rounded-lg border-2 border-dashed border-[var(--color-border)] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-light)] transition-colors"
+                  className={`aspect-video rounded-lg border-2 border-dashed border-[var(--color-border)] flex flex-col items-center justify-center gap-2 transition-colors ${uploadingImage ? "opacity-50" : "cursor-pointer hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-light)]"}`}
                 >
-                  <ImageIcon className="h-8 w-8 text-[var(--color-text-muted)]" />
-                  <p className="text-sm text-[var(--color-text-muted)]">
-                    Click to upload
-                  </p>
+                  {uploadingImage ? (
+                    <>
+                      <Loader2 className="h-8 w-8 text-[var(--color-accent)] animate-spin" />
+                      <p className="text-sm text-[var(--color-text-muted)]">
+                        Uploading...
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-8 w-8 text-[var(--color-text-muted)]" />
+                      <p className="text-sm text-[var(--color-text-muted)]">
+                        Click to upload
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
 

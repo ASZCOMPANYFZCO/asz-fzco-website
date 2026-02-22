@@ -29,6 +29,7 @@ export interface Product {
   category: ProductCategory;
   shortDescription: string;
   image?: string;
+  images?: string[];
   specifications: Record<string, string>;
   mmtaSpecs?: MMTASpecs;
   grades?: ProductGrade[];

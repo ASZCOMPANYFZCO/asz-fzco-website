@@ -39,6 +39,7 @@ function dbProductToProduct(db: DBProduct): Product {
     category: db.category as ProductCategory,
     shortDescription: db.short_description,
     image: db.image || undefined,
+    images: db.images || undefined,
     specifications: db.specifications || {},
     mmtaSpecs: db.mmta_specs
       ? {

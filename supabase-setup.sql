@@ -90,3 +90,36 @@ CREATE POLICY "Allow public read of enquiries" ON enquiries FOR SELECT USING (tr
 CREATE POLICY "Allow public insert of enquiries" ON enquiries FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public update of enquiries" ON enquiries FOR UPDATE USING (true);
 CREATE POLICY "Allow public delete of enquiries" ON enquiries FOR DELETE USING (true);
+
+-- ============================================================
+-- STORAGE BUCKET FOR IMAGES
+-- ============================================================
+
+-- Create the public images bucket
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('images', 'images', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow anyone to read images (public bucket)
+DROP POLICY IF EXISTS "Allow public read of images" ON storage.objects;
+CREATE POLICY "Allow public read of images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'images');
+
+-- Allow anyone to upload images
+DROP POLICY IF EXISTS "Allow public upload of images" ON storage.objects;
+CREATE POLICY "Allow public upload of images"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'images');
+
+-- Allow anyone to update images
+DROP POLICY IF EXISTS "Allow public update of images" ON storage.objects;
+CREATE POLICY "Allow public update of images"
+ON storage.objects FOR UPDATE
+USING (bucket_id = 'images');
+
+-- Allow anyone to delete images
+DROP POLICY IF EXISTS "Allow public delete of images" ON storage.objects;
+CREATE POLICY "Allow public delete of images"
+ON storage.objects FOR DELETE
+USING (bucket_id = 'images');

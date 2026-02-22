@@ -35,6 +35,7 @@ import { AdminHeader } from "@/components/admin";
 import { Button, Card } from "@/components/ui";
 import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
 import { getProductById, upsertProduct } from "@/lib/data";
+import { uploadImage } from "@/lib/storage";
 import type { Product, ProductGrade, MMTASpecs } from "@/lib/types";
 
 const MMTA_SPEC_LABELS: Record<keyof MMTASpecs, string> = {
@@ -156,6 +157,7 @@ export default function AdminProductEditPage() {
   const [grades, setGrades] = useState<ProductGrade[]>([]);
   const [productImages, setProductImages] = useState<string[]>([]);
   const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   // Drag-to-reorder for specifications
   const [specIdCounter, setSpecIdCounter] = useState(1);
@@ -201,6 +203,12 @@ export default function AdminProductEditPage() {
           }
           if (product.grades && product.grades.length > 0) {
             setGrades([...product.grades]);
+          }
+          // Load images from DB
+          if (product.images && product.images.length > 0) {
+            setProductImages([...product.images]);
+          } else if (product.image) {
+            setProductImages([product.image]);
           }
         }
         setIsLoading(false);
@@ -522,35 +530,46 @@ export default function AdminProductEditPage() {
             </div>
           )}
 
-          <label className="block border-2 border-dashed border-[var(--color-border)] rounded-xl p-8 text-center hover:border-[var(--color-accent)] transition-colors cursor-pointer">
+          <label className={`block border-2 border-dashed border-[var(--color-border)] rounded-xl p-8 text-center hover:border-[var(--color-accent)] transition-colors ${uploadingImages ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
               multiple
               className="hidden"
-              onChange={(e) => {
+              disabled={uploadingImages}
+              onChange={async (e) => {
                 const files = e.target.files;
-                if (files) {
-                  Array.from(files).forEach((file) => {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                      if (ev.target?.result) {
-                        setProductImages((prev) => [
-                          ...prev,
-                          ev.target!.result as string,
-                        ]);
-                      }
-                    };
-                    reader.readAsDataURL(file);
-                  });
+                if (!files || files.length === 0) return;
+                setUploadingImages(true);
+                try {
+                  const fileList = Array.from(files);
+                  for (const file of fileList) {
+                    const url = await uploadImage(file, "products");
+                    setProductImages((prev) => [...prev, url]);
+                  }
+                } catch (err) {
+                  alert(`Image upload failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+                } finally {
+                  setUploadingImages(false);
                 }
                 e.target.value = "";
               }}
             />
-            <Upload className="h-8 w-8 mx-auto text-[var(--color-text-muted)] mb-3" />
-            <p className="text-sm font-medium text-[var(--color-text-primary)] mb-1">
-              Click to upload or drag and drop
-            </p>
+            {uploadingImages ? (
+              <>
+                <Loader2 className="h-8 w-8 mx-auto text-[var(--color-accent)] mb-3 animate-spin" />
+                <p className="text-sm font-medium text-[var(--color-text-primary)] mb-1">
+                  Uploading...
+                </p>
+              </>
+            ) : (
+              <>
+                <Upload className="h-8 w-8 mx-auto text-[var(--color-text-muted)] mb-3" />
+                <p className="text-sm font-medium text-[var(--color-text-primary)] mb-1">
+                  Click to upload or drag and drop
+                </p>
+              </>
+            )}
             <p className="text-xs text-[var(--color-text-muted)]">
               PNG, JPG or WebP (max. 5MB each)
             </p>
