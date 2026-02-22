@@ -231,18 +231,21 @@ export default function AdminProductEditPage() {
     // Convert specifications array to object
     const specsObj: Record<string, string> = {};
     specifications.forEach((s) => {
-      if (s.key.trim()) specsObj[s.key.trim()] = s.value.trim();
+      const key = (s.key || "").trim();
+      const value = (s.value || "").trim();
+      if (key) specsObj[key] = value;
     });
 
     // Convert mmtaSpecs to plain object
     const mmtaObj: Record<string, string> = {};
-    (Object.entries(mmtaSpecs) as [string, string][]).forEach(([k, v]) => {
-      if (v.trim()) mmtaObj[k] = v.trim();
+    Object.entries(mmtaSpecs).forEach(([k, v]) => {
+      const val = (v || "").trim();
+      if (val) mmtaObj[k] = val;
     });
 
     // Convert grades to plain array of objects
     const gradesArr = grades
-      .filter((g) => g.name.trim())
+      .filter((g) => (g.name || "").trim())
       .map((g) => ({
         name: g.name,
         gradePercent: g.gradePercent || "",
