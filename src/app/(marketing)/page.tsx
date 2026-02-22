@@ -13,6 +13,8 @@ import {
   serverGetBlogPosts,
 } from "@/lib/data";
 
+export const revalidate = 60;
+
 export default async function HomePage() {
   // Fetch all data in parallel on the server — no loading spinners!
   const [products, productCount, posts] = await Promise.all([

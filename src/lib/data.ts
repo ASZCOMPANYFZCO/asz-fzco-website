@@ -389,93 +389,87 @@ export async function createEnquiry(enquiry: {
 // SERVER-SAFE DATA FUNCTIONS
 // These create a fresh Supabase client per call so they can
 // be used safely in Server Components (no shared singleton).
+// Results are cached for 60s so navigating between pages is instant.
 // ============================================================
 
-export async function serverGetProducts(): Promise<Product[]> {
-  const client = createServerSupabaseClient();
-  if (!client) return [];
+import { unstable_cache } from "next/cache";
 
-  const { data, error } = await client
-    .from("products")
-    .select("*")
-    .eq("is_active", true)
-    .order("name");
+/** Revalidation period in seconds — how long cached data is served before refreshing */
+const CACHE_TTL = 60;
 
-  if (error) {
-    console.error("Error fetching products (server):", error);
-    return [];
-  }
+export const serverGetProducts = unstable_cache(
+  async (): Promise<Product[]> => {
+    const client = createServerSupabaseClient();
+    if (!client) return [];
 
-  return (data as DBProduct[]).map(dbProductToProduct);
-}
+    const { data, error } = await client
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .order("name");
+
+    if (error) {
+      console.error("Error fetching products (server):", error);
+      return [];
+    }
+
+    return (data as DBProduct[]).map(dbProductToProduct);
+  },
+  ["products"],
+  { revalidate: CACHE_TTL }
+);
 
 export async function serverGetProductBySlug(slug: string): Promise<Product | null> {
-  const client = createServerSupabaseClient();
-  if (!client) return null;
-
-  const { data, error } = await client
-    .from("products")
-    .select("*")
-    .eq("slug", slug)
-    .single();
-
-  if (error) {
-    console.error("Error fetching product (server):", error);
-    return null;
-  }
-
-  return dbProductToProduct(data as DBProduct);
+  // Use the cached products list instead of a separate query — avoids extra DB round-trip
+  const products = await serverGetProducts();
+  return products.find((p) => p.slug === slug) ?? null;
 }
 
-export async function serverGetProductCount(): Promise<number> {
-  const client = createServerSupabaseClient();
-  if (!client) return 0;
+export const serverGetProductCount = unstable_cache(
+  async (): Promise<number> => {
+    const client = createServerSupabaseClient();
+    if (!client) return 0;
 
-  const { count, error } = await client
-    .from("products")
-    .select("*", { count: "exact", head: true })
-    .eq("is_active", true);
+    const { count, error } = await client
+      .from("products")
+      .select("*", { count: "exact", head: true })
+      .eq("is_active", true);
 
-  if (error) {
-    console.error("Error counting products (server):", error);
-    return 0;
-  }
+    if (error) {
+      console.error("Error counting products (server):", error);
+      return 0;
+    }
 
-  return count || 0;
-}
+    return count || 0;
+  },
+  ["product-count"],
+  { revalidate: CACHE_TTL }
+);
 
-export async function serverGetBlogPosts(): Promise<DBBlogPost[]> {
-  const client = createServerSupabaseClient();
-  if (!client) return [];
+export const serverGetBlogPosts = unstable_cache(
+  async (): Promise<DBBlogPost[]> => {
+    const client = createServerSupabaseClient();
+    if (!client) return [];
 
-  const { data, error } = await client
-    .from("blog_posts")
-    .select("*")
-    .eq("status", "published")
-    .order("published_at", { ascending: false });
+    const { data, error } = await client
+      .from("blog_posts")
+      .select("*")
+      .eq("status", "published")
+      .order("published_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching blog posts (server):", error);
-    return [];
-  }
+    if (error) {
+      console.error("Error fetching blog posts (server):", error);
+      return [];
+    }
 
-  return data as DBBlogPost[];
-}
+    return data as DBBlogPost[];
+  },
+  ["blog-posts"],
+  { revalidate: CACHE_TTL }
+);
 
 export async function serverGetBlogPostBySlug(slug: string): Promise<DBBlogPost | null> {
-  const client = createServerSupabaseClient();
-  if (!client) return null;
-
-  const { data, error } = await client
-    .from("blog_posts")
-    .select("*")
-    .eq("slug", slug)
-    .single();
-
-  if (error) {
-    console.error("Error fetching blog post (server):", error);
-    return null;
-  }
-
-  return data as DBBlogPost;
+  // Use the cached blog posts list instead of a separate query
+  const posts = await serverGetBlogPosts();
+  return posts.find((p) => p.slug === slug) ?? null;
 }

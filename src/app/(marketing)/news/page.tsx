@@ -2,6 +2,8 @@ import { PageHeader } from "@/components/shared";
 import { serverGetBlogPosts } from "@/lib/data";
 import { NewsFilter } from "./NewsFilter";
 
+export const revalidate = 60;
+
 export default async function NewsPage() {
   const posts = await serverGetBlogPosts();
 
