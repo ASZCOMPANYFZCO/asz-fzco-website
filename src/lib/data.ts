@@ -152,8 +152,9 @@ export async function upsertProduct(product: {
   is_featured?: boolean;
 }) {
   if (!isSupabaseConfigured()) return { data: null, error: new Error("Supabase not configured") };
+  const { id, ...productData } = product;
   const payload = {
-    ...product,
+    ...productData,
     updated_at: new Date().toISOString(),
   };
 
@@ -277,9 +278,10 @@ export async function upsertBlogPost(post: {
 }) {
   if (!isSupabaseConfigured()) return { data: null, error: new Error("Supabase not configured") };
   if (post.id) {
+    const { id, ...postData } = post;
     const { data, error } = await supabase
       .from("blog_posts")
-      .update(post)
+      .update(postData)
       .eq("id", post.id)
       .select()
       .single();
