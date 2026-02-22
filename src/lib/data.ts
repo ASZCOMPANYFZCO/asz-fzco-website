@@ -158,21 +158,25 @@ export async function upsertProduct(product: {
     updated_at: new Date().toISOString(),
   };
 
-  if (product.id) {
-    const { data, error } = await supabase
-      .from("products")
-      .update(payload)
-      .eq("id", product.id)
-      .select()
-      .single();
-    return { data, error };
-  } else {
-    const { data, error } = await supabase
-      .from("products")
-      .insert(payload)
-      .select()
-      .single();
-    return { data, error };
+  try {
+    if (product.id) {
+      // UPDATE — don't chain .select().single() as it can hang
+      const { error } = await supabase
+        .from("products")
+        .update(payload)
+        .eq("id", product.id);
+      return { data: { id: product.id, ...payload } as Record<string, unknown>, error };
+    } else {
+      // INSERT — need the generated id for redirect
+      const { data, error } = await supabase
+        .from("products")
+        .insert(payload)
+        .select()
+        .single();
+      return { data, error };
+    }
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err : new Error("Unknown error saving product") };
   }
 }
 
@@ -277,22 +281,26 @@ export async function upsertBlogPost(post: {
   published_at?: string;
 }) {
   if (!isSupabaseConfigured()) return { data: null, error: new Error("Supabase not configured") };
-  if (post.id) {
-    const { id, ...postData } = post;
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .update(postData)
-      .eq("id", post.id)
-      .select()
-      .single();
-    return { data, error };
-  } else {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .insert(post)
-      .select()
-      .single();
-    return { data, error };
+  try {
+    if (post.id) {
+      // UPDATE — don't chain .select().single() as it can hang
+      const { id, ...postData } = post;
+      const { error } = await supabase
+        .from("blog_posts")
+        .update(postData)
+        .eq("id", post.id);
+      return { data: { id: post.id, ...postData } as Record<string, unknown>, error };
+    } else {
+      // INSERT — need the generated id for redirect
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .insert(post)
+        .select()
+        .single();
+      return { data, error };
+    }
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err : new Error("Unknown error saving blog post") };
   }
 }
 
