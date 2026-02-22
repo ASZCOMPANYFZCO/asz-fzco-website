@@ -271,21 +271,27 @@ export default function AdminProductEditPage() {
       payload.id = productId;
     }
 
-    const { data, error } = await upsertProduct(payload);
+    try {
+      console.log("[handleSave] Saving product...", isNew ? "NEW" : productId);
+      const { data, error } = await upsertProduct(payload);
 
-    setIsSaving(false);
+      if (error) {
+        alert(`Error saving product: ${error.message}`);
+        return;
+      }
 
-    if (error) {
-      alert(`Error saving product: ${error.message}`);
-      return;
-    }
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
 
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
-
-    // For new products, redirect to edit page with real ID
-    if (isNew && data?.id) {
-      router.replace(`/admin/products/${data.id}`);
+      // For new products, redirect to edit page with real ID
+      if (isNew && data?.id) {
+        router.replace(`/admin/products/${data.id}`);
+      }
+    } catch (err) {
+      console.error("[handleSave] Unexpected error:", err);
+      alert(`Error saving product: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 

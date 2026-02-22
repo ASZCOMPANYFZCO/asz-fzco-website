@@ -1,6 +1,15 @@
 import { supabase, isSupabaseConfigured } from "./supabase";
 import type { Product, ProductCategory } from "./types";
 
+// Timeout helper — ensures Supabase calls never hang forever
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function withTimeout<T extends Promise<any>>(promise: T, ms: number): T {
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(`Request timed out after ${ms}ms`)), ms)
+  );
+  return Promise.race([promise, timeout]) as T;
+}
+
 // ============================================================
 // PRODUCTS
 // ============================================================
@@ -160,22 +169,24 @@ export async function upsertProduct(product: {
 
   try {
     if (product.id) {
-      // UPDATE — don't chain .select().single() as it can hang
-      const { error } = await supabase
-        .from("products")
-        .update(payload)
-        .eq("id", product.id);
-      return { data: { id: product.id, ...payload } as Record<string, unknown>, error };
+      console.log("[upsertProduct] Updating product:", product.id);
+      const result = await withTimeout(
+        supabase.from("products").update(payload).eq("id", product.id),
+        10000
+      );
+      console.log("[upsertProduct] Update result:", { error: result.error, status: result.status });
+      return { data: { id: product.id, ...payload } as Record<string, unknown>, error: result.error };
     } else {
-      // INSERT — need the generated id for redirect
-      const { data, error } = await supabase
-        .from("products")
-        .insert(payload)
-        .select()
-        .single();
-      return { data, error };
+      console.log("[upsertProduct] Inserting new product");
+      const result = await withTimeout(
+        supabase.from("products").insert(payload).select().single(),
+        10000
+      );
+      console.log("[upsertProduct] Insert result:", { data: result.data, error: result.error, status: result.status });
+      return { data: result.data, error: result.error };
     }
   } catch (err) {
+    console.error("[upsertProduct] Exception:", err);
     return { data: null, error: err instanceof Error ? err : new Error("Unknown error saving product") };
   }
 }
@@ -283,23 +294,25 @@ export async function upsertBlogPost(post: {
   if (!isSupabaseConfigured()) return { data: null, error: new Error("Supabase not configured") };
   try {
     if (post.id) {
-      // UPDATE — don't chain .select().single() as it can hang
+      console.log("[upsertBlogPost] Updating post:", post.id);
       const { id, ...postData } = post;
-      const { error } = await supabase
-        .from("blog_posts")
-        .update(postData)
-        .eq("id", post.id);
-      return { data: { id: post.id, ...postData } as Record<string, unknown>, error };
+      const result = await withTimeout(
+        supabase.from("blog_posts").update(postData).eq("id", post.id),
+        10000
+      );
+      console.log("[upsertBlogPost] Update result:", { error: result.error, status: result.status });
+      return { data: { id: post.id, ...postData } as Record<string, unknown>, error: result.error };
     } else {
-      // INSERT — need the generated id for redirect
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .insert(post)
-        .select()
-        .single();
-      return { data, error };
+      console.log("[upsertBlogPost] Inserting new post");
+      const result = await withTimeout(
+        supabase.from("blog_posts").insert(post).select().single(),
+        10000
+      );
+      console.log("[upsertBlogPost] Insert result:", { data: result.data, error: result.error, status: result.status });
+      return { data: result.data, error: result.error };
     }
   } catch (err) {
+    console.error("[upsertBlogPost] Exception:", err);
     return { data: null, error: err instanceof Error ? err : new Error("Unknown error saving blog post") };
   }
 }

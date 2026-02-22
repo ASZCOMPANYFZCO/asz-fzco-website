@@ -117,21 +117,27 @@ export default function AdminBlogEditPage() {
       postData.id = postId;
     }
 
-    const { data, error } = await upsertBlogPost(postData);
+    try {
+      console.log("[handleSave] Saving blog post...", isNew ? "NEW" : postId);
+      const { data, error } = await upsertBlogPost(postData);
 
-    setIsSaving(false);
+      if (error) {
+        alert(`Error saving post: ${error.message}`);
+        return;
+      }
 
-    if (error) {
-      alert(`Error saving post: ${error.message}`);
-      return;
-    }
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
 
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
-
-    // For new posts, redirect to the edit page with the real ID
-    if (isNew && data?.id) {
-      router.replace(`/admin/blog/${data.id}`);
+      // For new posts, redirect to the edit page with the real ID
+      if (isNew && data?.id) {
+        router.replace(`/admin/blog/${data.id}`);
+      }
+    } catch (err) {
+      console.error("[handleSave] Unexpected error:", err);
+      alert(`Error saving post: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
