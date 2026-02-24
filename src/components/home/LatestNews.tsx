@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Calendar, Clock } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { BLOG_CATEGORIES } from "@/lib/constants";
@@ -35,27 +36,34 @@ export function LatestNews({ posts }: { posts: DBBlogPost[] }) {
         {/* Posts Grid */}
         {posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post, index) => (
+            {posts.map((post) => (
               <Link
                 key={post.id}
                 href={`/news/${post.slug}`}
                 className="group"
               >
                 <article className="h-full flex flex-col bg-[var(--color-bg-primary)] rounded-xl border border-[var(--color-border)] hover:border-[var(--color-accent)] hover:shadow-lg transition-all duration-300 overflow-hidden">
-                  {/* Featured Image Placeholder */}
+                  {/* Featured Image */}
                   <div className="relative aspect-video bg-[var(--color-bg-tertiary)]">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
-                          <span className="text-lg font-bold text-[var(--color-accent)]">
-                            {index + 1}
-                          </span>
+                    {post.featured_image ? (
+                      <Image
+                        src={post.featured_image}
+                        alt={post.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
+                            <span className="text-lg font-bold text-[var(--color-accent)]">
+                              {post.title.charAt(0)}
+                            </span>
+                          </div>
                         </div>
-                        <p className="text-xs text-[var(--color-text-muted)]">
-                          Featured Image
-                        </p>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Content */}
