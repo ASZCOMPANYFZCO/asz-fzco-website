@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   Calendar,
@@ -120,24 +121,24 @@ export default async function ArticlePage({
       </section>
 
       {/* Featured Image */}
-      <section className="py-8">
-        <div className="container-custom">
-          <div className="max-w-4xl mx-auto">
-            <div className="aspect-video rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
-                  <span className="text-3xl font-bold text-[var(--color-accent)]">
-                    {post.title.charAt(0)}
-                  </span>
-                </div>
-                <p className="text-sm text-[var(--color-text-muted)]">
-                  Featured Image Placeholder
-                </p>
+      {post.featured_image ? (
+        <section className="py-8">
+          <div className="container-custom">
+            <div className="max-w-4xl mx-auto">
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+                <Image
+                  src={post.featured_image}
+                  alt={post.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 896px"
+                  priority
+                />
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {/* Article Content */}
       <section className="pb-16">

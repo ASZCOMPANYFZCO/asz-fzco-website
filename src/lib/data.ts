@@ -397,6 +397,7 @@ import { unstable_cache } from "next/cache";
 /** Revalidation period in seconds — how long cached data is served before refreshing */
 const CACHE_TTL = 60;
 
+/** Lightweight listing query — only fetches the columns needed for product cards */
 export const serverGetProducts = unstable_cache(
   async (): Promise<Product[]> => {
     const client = createServerSupabaseClient();
@@ -404,7 +405,7 @@ export const serverGetProducts = unstable_cache(
 
     const { data, error } = await client
       .from("products")
-      .select("*")
+      .select("id, name, slug, category, short_description, image, specifications, is_active, is_featured")
       .eq("is_active", true)
       .order("name");
 
@@ -419,11 +420,29 @@ export const serverGetProducts = unstable_cache(
   { revalidate: CACHE_TTL }
 );
 
-export async function serverGetProductBySlug(slug: string): Promise<Product | null> {
-  // Use the cached products list instead of a separate query — avoids extra DB round-trip
-  const products = await serverGetProducts();
-  return products.find((p) => p.slug === slug) ?? null;
-}
+/** Full product query by slug — fetches all columns for the detail page */
+export const serverGetProductBySlug = unstable_cache(
+  async (slug: string): Promise<Product | null> => {
+    const client = createServerSupabaseClient();
+    if (!client) return null;
+
+    const { data, error } = await client
+      .from("products")
+      .select("*")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .single();
+
+    if (error) {
+      console.error("Error fetching product by slug (server):", error);
+      return null;
+    }
+
+    return dbProductToProduct(data as DBProduct);
+  },
+  ["product-by-slug"],
+  { revalidate: CACHE_TTL }
+);
 
 export async function serverGetProductCount(): Promise<number> {
   // Derive count from the cached products list — no extra DB connection

@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/shared";
 import { ProductEnquiryForm, ProductCard } from "@/components/products";
 import { Button, Card } from "@/components/ui";
 import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
-import { serverGetProducts } from "@/lib/data";
+import { serverGetProducts, serverGetProductBySlug } from "@/lib/data";
 
 export default async function ProductPage({
   params,
@@ -15,9 +15,11 @@ export default async function ProductPage({
 }) {
   const { slug } = await params;
 
-  // Single cached call — product + related products from one list
-  const allProducts = await serverGetProducts();
-  const product = allProducts.find((p) => p.slug === slug) ?? null;
+  // Fetch full product data and lightweight listing in parallel
+  const [product, allProducts] = await Promise.all([
+    serverGetProductBySlug(slug),
+    serverGetProducts(),
+  ]);
 
   if (!product) {
     notFound();
