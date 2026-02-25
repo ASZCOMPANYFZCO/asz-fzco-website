@@ -19,6 +19,25 @@ export async function POST(request: NextRequest) {
 
     const data = result.data;
 
+    // Save enquiry to database first (best-effort — don't fail if DB is unavailable)
+    try {
+      const supabase = createServerSupabaseClient();
+      if (supabase) {
+        await supabase.from('enquiries').insert({
+          full_name: data.fullName,
+          email: data.email,
+          phone: data.phone || null,
+          company: data.company || null,
+          country: data.country || null,
+          products: data.products,
+          quantity: data.quantity || null,
+          message: data.additionalNotes || null,
+        });
+      }
+    } catch (dbError) {
+      console.error('[Contact API] Failed to save enquiry to database:', dbError);
+    }
+
     // Check if SMTP is configured
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = process.env.SMTP_PORT;
@@ -66,25 +85,6 @@ export async function POST(request: NextRequest) {
         html: confirmationHtml,
       }),
     ]);
-
-    // Save enquiry to database (best-effort — don't fail if DB is unavailable)
-    try {
-      const supabase = createServerSupabaseClient();
-      if (supabase) {
-        await supabase.from('enquiries').insert({
-          full_name: data.fullName,
-          email: data.email,
-          phone: data.phone || null,
-          company: data.company || null,
-          country: data.country || null,
-          products: data.products,
-          quantity: data.quantity || null,
-          message: data.additionalNotes || null,
-        });
-      }
-    } catch (dbError) {
-      console.error('[Contact API] Failed to save enquiry to database:', dbError);
-    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
