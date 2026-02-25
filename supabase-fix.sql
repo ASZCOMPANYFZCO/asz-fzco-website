@@ -6,10 +6,36 @@
 -- It ensures all tables, policies, and storage are correctly
 -- configured for the website and admin panel.
 -- ============================================================
+--
+-- INSTRUCTIONS (2 steps):
+--
+-- STEP 1: Run this SQL script (paste it here and click Run)
+--
+-- STEP 2: Create the storage bucket via the Dashboard UI:
+--   1. Go to Storage in the left sidebar
+--   2. Click "New bucket"
+--   3. Name: images
+--   4. Toggle ON "Public bucket"
+--   5. Click "Create bucket"
+--
+-- After both steps, go to the admin panel, upload a featured
+-- image on any blog post, click Save, and it will work.
+-- ============================================================
 
 
 -- ============================================================
--- 1. ENABLE ROW LEVEL SECURITY ON ALL TABLES
+-- 1. CLEAN UP GHOST BUCKET ROW
+--    A previous SQL INSERT created a row in storage.buckets
+--    that the Storage API doesn't recognise. Remove it so
+--    the Dashboard UI can create the bucket properly.
+-- ============================================================
+
+DELETE FROM storage.objects WHERE bucket_id = 'images';
+DELETE FROM storage.buckets WHERE id = 'images';
+
+
+-- ============================================================
+-- 2. ENABLE ROW LEVEL SECURITY ON ALL TABLES
 --    (Safe to run even if already enabled)
 -- ============================================================
 
@@ -19,7 +45,7 @@ ALTER TABLE enquiries ENABLE ROW LEVEL SECURITY;
 
 
 -- ============================================================
--- 2. TABLE RLS POLICIES
+-- 3. TABLE RLS POLICIES
 --    Drop-then-create pattern avoids "already exists" errors
 -- ============================================================
 
@@ -64,19 +90,10 @@ CREATE POLICY "Allow public delete of enquiries" ON enquiries FOR DELETE USING (
 
 
 -- ============================================================
--- 3. CREATE STORAGE BUCKET FOR IMAGE UPLOADS
---    This is the critical fix — without this bucket, image
---    uploads from the admin panel silently fail.
--- ============================================================
-
--- Delete any broken/ghost bucket entry first, then create fresh
-DELETE FROM storage.buckets WHERE id = 'images';
-INSERT INTO storage.buckets (id, name, public) VALUES ('images', 'images', true);
-
-
--- ============================================================
 -- 4. STORAGE RLS POLICIES
---    Allow public read/upload/update/delete on the images bucket
+--    Allow public read/upload/update/delete on the images bucket.
+--    (The bucket itself must be created via the Dashboard UI —
+--    see Step 2 in the instructions at the top of this file.)
 -- ============================================================
 
 DROP POLICY IF EXISTS "Allow public read of images" ON storage.objects;
@@ -103,8 +120,8 @@ CREATE POLICY "Allow public delete of images"
 -- ============================================================
 -- 5. CLEAN UP INVALID IMAGE PATHS IN EXISTING DATA
 --    The seed data had fake local paths like /images/blog/...
---    that don't exist in Supabase Storage. Clear them so the
---    website shows the letter fallback instead of broken images.
+--    that don't exist in storage. Clear them so the website
+--    shows a clean fallback instead of a broken image.
 -- ============================================================
 
 UPDATE blog_posts
@@ -114,14 +131,11 @@ UPDATE blog_posts
 
 
 -- ============================================================
--- DONE! After running this:
+-- ✅ SQL complete! Now do Step 2:
 --
--- 1. Go to the admin panel and upload featured images for
---    blog posts — they will now save correctly.
+--   Go to Storage (left sidebar) → New bucket → Name: images
+--   → Toggle ON "Public bucket" → Create bucket
 --
--- 2. Product images stored in /public/images/products/ work
---    as-is (they're bundled with the website deployment).
---
--- 3. Enquiries from the contact form will now appear in
---    the admin panel under Enquiries.
+-- Then in the admin panel, upload featured images on blog
+-- posts, click Save, and they will display on the live site.
 -- ============================================================
