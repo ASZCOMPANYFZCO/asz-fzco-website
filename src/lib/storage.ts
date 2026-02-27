@@ -112,8 +112,32 @@ export async function uploadImage(
     .from(BUCKET_NAME)
     .getPublicUrl(filename);
 
-  console.log("[uploadImage] Upload complete:", urlData.publicUrl);
-  return urlData.publicUrl;
+  const publicUrl = urlData.publicUrl;
+  console.log("[uploadImage] Upload complete:", publicUrl);
+
+  // Verify the public URL is actually accessible
+  try {
+    const check = await fetch(publicUrl, { method: "HEAD" });
+    if (!check.ok) {
+      console.error(
+        `[uploadImage] WARNING: Public URL returned ${check.status}. ` +
+        `The '${BUCKET_NAME}' bucket may not be set to public. ` +
+        `Go to Supabase Dashboard → Storage → ${BUCKET_NAME} bucket → Settings → toggle "Public bucket" ON.`
+      );
+      throw new Error(
+        `Image uploaded but not publicly accessible (HTTP ${check.status}). ` +
+        `Please ensure the "${BUCKET_NAME}" storage bucket is set to PUBLIC in your Supabase Dashboard.`
+      );
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("not publicly accessible")) {
+      throw err;
+    }
+    // Network error during verification — image may still be accessible
+    console.warn("[uploadImage] Could not verify public URL (non-critical):", err);
+  }
+
+  return publicUrl;
 }
 
 /**
@@ -148,4 +172,85 @@ export function isStorageUrl(url: string): boolean {
  */
 export function isBase64(url: string): boolean {
   return url.startsWith("data:image/");
+}
+
+/**
+ * Diagnose Supabase Storage configuration.
+ * Returns an object with the status of each check.
+ */
+export async function checkStorageHealth(): Promise<{
+  configured: boolean;
+  bucketExists: boolean;
+  bucketPublic: boolean;
+  canUpload: boolean;
+  error?: string;
+}> {
+  if (!isSupabaseConfigured()) {
+    return { configured: false, bucketExists: false, bucketPublic: false, canUpload: false, error: "Supabase not configured" };
+  }
+
+  // Check if bucket exists by listing buckets
+  const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+  if (listError) {
+    return { configured: true, bucketExists: false, bucketPublic: false, canUpload: false, error: `Cannot list buckets: ${listError.message}` };
+  }
+
+  const bucket = buckets?.find((b: { id: string; public: boolean }) => b.id === BUCKET_NAME);
+  if (!bucket) {
+    return {
+      configured: true,
+      bucketExists: false,
+      bucketPublic: false,
+      canUpload: false,
+      error: `Bucket "${BUCKET_NAME}" not found. Create it in Supabase Dashboard → Storage → New Bucket (name: "${BUCKET_NAME}", toggle Public ON).`,
+    };
+  }
+
+  // Check if bucket is public
+  const isPublic = bucket.public;
+
+  // Try uploading a tiny test file
+  const testPath = `_health-check/${Date.now()}.txt`;
+  const { error: uploadError } = await supabase.storage
+    .from(BUCKET_NAME)
+    .upload(testPath, new Blob(["test"], { type: "text/plain" }), { upsert: true });
+
+  let canUpload = !uploadError;
+  let publicAccessible = false;
+
+  if (canUpload) {
+    // Check public accessibility
+    const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(testPath);
+    try {
+      const res = await fetch(urlData.publicUrl, { method: "HEAD" });
+      publicAccessible = res.ok;
+    } catch {
+      // fetch failed
+    }
+
+    // Clean up test file
+    await supabase.storage.from(BUCKET_NAME).remove([testPath]);
+  }
+
+  if (!canUpload) {
+    return {
+      configured: true,
+      bucketExists: true,
+      bucketPublic: isPublic,
+      canUpload: false,
+      error: `Upload failed: ${uploadError?.message}. Check RLS policies on storage.objects for the "${BUCKET_NAME}" bucket.`,
+    };
+  }
+
+  if (!publicAccessible) {
+    return {
+      configured: true,
+      bucketExists: true,
+      bucketPublic: false,
+      canUpload: true,
+      error: `Bucket "${BUCKET_NAME}" exists and uploads work, but images are NOT publicly accessible. Go to Supabase Dashboard → Storage → "${BUCKET_NAME}" → Settings → toggle "Public bucket" ON.`,
+    };
+  }
+
+  return { configured: true, bucketExists: true, bucketPublic: true, canUpload: true };
 }

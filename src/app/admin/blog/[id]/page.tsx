@@ -140,6 +140,13 @@ export default function AdminBlogEditPage() {
         console.log("[handleSave] Verification passed — data persisted correctly");
       }
 
+      // Revalidate the blog cache so the main site picks up changes immediately
+      try {
+        await fetch("/api/revalidate", { method: "POST" });
+      } catch {
+        // Non-critical — cache will expire on its own within 60s
+      }
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
 

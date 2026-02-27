@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowLeft,
   Calendar,
@@ -12,6 +11,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { BlogCard } from "@/components/blog";
+import { SafeImage } from "@/components/blog/SafeImage";
 import { Button, Badge, Card } from "@/components/ui";
 import { BLOG_CATEGORIES, SITE_CONFIG } from "@/lib/constants";
 import { serverGetBlogPosts } from "@/lib/data";
@@ -125,16 +125,12 @@ export default async function ArticlePage({
         <section className="py-8">
           <div className="container-custom">
             <div className="max-w-4xl mx-auto">
-              <div className="relative aspect-video rounded-xl overflow-hidden bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
-                <Image
-                  src={post.featured_image}
-                  alt={post.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 896px"
-                  priority
-                />
-              </div>
+              <SafeImage
+                src={post.featured_image}
+                alt={post.title}
+                sizes="(max-width: 1024px) 100vw, 896px"
+                priority
+              />
             </div>
           </div>
         </section>

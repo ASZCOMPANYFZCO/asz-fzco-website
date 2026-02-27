@@ -1,3 +1,7 @@
+
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Calendar, Clock, ArrowUpRight } from "lucide-react";
@@ -19,7 +23,25 @@ interface BlogCardProps {
   featured?: boolean;
 }
 
+function Placeholder({ letter, size = "md" }: { letter: string; size?: "md" | "lg" }) {
+  const iconSize = size === "lg" ? "w-16 h-16" : "w-12 h-12";
+  const textSize = size === "lg" ? "text-2xl" : "text-lg";
+  return (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="text-center">
+        <div className={`${iconSize} mx-auto mb-2 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center`}>
+          <span className={`${textSize} font-bold text-[var(--color-accent)]`}>
+            {letter}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function BlogCard({ post, featured = false }: BlogCardProps) {
+  const [imgError, setImgError] = useState(false);
+  const hasImage = Boolean(post.featuredImage) && !imgError;
   const getCategoryLabel = (categoryValue: string) => {
     const category = BLOG_CATEGORIES.find((c) => c.value === categoryValue);
     return category?.label || categoryValue;
@@ -31,24 +53,17 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
         <article className="grid md:grid-cols-2 gap-6 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-all duration-300 overflow-hidden">
           {/* Image */}
           <div className="relative aspect-video md:aspect-auto bg-[var(--color-bg-tertiary)]">
-            {post.featuredImage ? (
+            {hasImage ? (
               <Image
-                src={post.featuredImage}
+                src={post.featuredImage!}
                 alt={post.title}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                onError={() => setImgError(true)}
               />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
-                    <span className="text-2xl font-bold text-[var(--color-accent)]">
-                      {post.title.charAt(0)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <Placeholder letter={post.title.charAt(0)} size="lg" />
             )}
           </div>
 
@@ -87,24 +102,17 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
       <article className="h-full flex flex-col bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-border)] hover:border-[var(--color-accent)] hover:shadow-lg transition-all duration-300 overflow-hidden">
         {/* Image */}
         <div className="relative aspect-video bg-[var(--color-bg-tertiary)]">
-          {post.featuredImage ? (
+          {hasImage ? (
             <Image
-              src={post.featuredImage}
+              src={post.featuredImage!}
               alt={post.title}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={() => setImgError(true)}
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-[var(--color-accent-light)] flex items-center justify-center">
-                  <span className="text-lg font-bold text-[var(--color-accent)]">
-                    {post.title.charAt(0)}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <Placeholder letter={post.title.charAt(0)} />
           )}
 
           {/* Hover Overlay */}

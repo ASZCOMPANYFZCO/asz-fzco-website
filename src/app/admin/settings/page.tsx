@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Save, Upload, Globe, Building2, Users, FileImage } from "lucide-react";
+import { Save, Upload, Globe, Building2, Users, FileImage, CheckCircle, XCircle, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui";
 import { SITE_CONFIG, TEAM_MEMBERS } from "@/lib/constants";
+import { checkStorageHealth } from "@/lib/storage";
 
 /* --------------------------------------------------------
    Admin Site Settings
@@ -310,6 +311,9 @@ export default function AdminSettingsPage() {
       {/* Images Tab */}
       {activeTab === "images" && (
         <div className="space-y-6">
+          {/* Storage Health Check */}
+          <StorageDiagnostic />
+
           {/* About page image */}
           <div>
             <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
@@ -441,6 +445,87 @@ export default function AdminSettingsPage() {
           database and be accessible from any device.
         </p>
       </div>
+    </div>
+  );
+}
+
+/* ---- Storage Diagnostic Widget ---- */
+type HealthResult = Awaited<ReturnType<typeof checkStorageHealth>>;
+
+function StorageDiagnostic() {
+  const [result, setResult] = useState<HealthResult | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function runCheck() {
+    setLoading(true);
+    try {
+      const r = await checkStorageHealth();
+      setResult(r);
+    } catch (err) {
+      setResult({
+        configured: false,
+        bucketExists: false,
+        bucketPublic: false,
+        canUpload: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const Check = ({ ok, label }: { ok: boolean; label: string }) => (
+    <div className="flex items-center gap-2 text-sm">
+      {ok ? (
+        <CheckCircle className="h-4 w-4 text-green-500" />
+      ) : (
+        <XCircle className="h-4 w-4 text-red-500" />
+      )}
+      <span className={ok ? "text-green-700" : "text-red-700"}>{label}</span>
+    </div>
+  );
+
+  return (
+    <div className="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
+          Storage Health Check
+        </h3>
+        <Button variant="secondary" size="sm" onClick={runCheck} loading={loading}>
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4 mr-1" />
+          )}
+          {result ? "Re-check" : "Run Check"}
+        </Button>
+      </div>
+
+      {!result && !loading && (
+        <p className="text-sm text-[var(--color-text-muted)]">
+          Click &ldquo;Run Check&rdquo; to diagnose image storage configuration.
+          This verifies the Supabase Storage bucket exists, is public, and accepts uploads.
+        </p>
+      )}
+
+      {result && (
+        <div className="space-y-2">
+          <Check ok={result.configured} label="Supabase configured" />
+          <Check ok={result.bucketExists} label='Storage bucket "images" exists' />
+          <Check ok={result.canUpload} label="Can upload images" />
+          <Check ok={result.bucketPublic} label="Images are publicly accessible" />
+          {result.error && (
+            <div className="mt-3 p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-800">
+              {result.error}
+            </div>
+          )}
+          {!result.error && result.bucketPublic && (
+            <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200 text-sm text-green-800">
+              Storage is correctly configured. Images should display on the website.
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
