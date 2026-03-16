@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send, CheckCircle } from "lucide-react";
@@ -20,6 +20,7 @@ export function ContactForm() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const formLoadedAt = useRef<number>(Date.now());
 
   useEffect(() => {
     getProducts().then(setProducts);
@@ -87,11 +88,21 @@ export function ContactForm() {
   const onSubmit = async (data: QuoteFormValues) => {
     setSubmitError(null);
 
+    // Read honeypot value from the hidden field
+    const honeypotField = document.querySelector<HTMLInputElement>(
+      'input[name="website"]'
+    );
+    const honeypotValue = honeypotField?.value || "";
+
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          _hp: honeypotValue,
+          _ts: formLoadedAt.current,
+        }),
       });
 
       if (!response.ok) {
@@ -139,6 +150,12 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      {/* Honeypot field — hidden from real users, bots will auto-fill */}
+      <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", top: "-9999px", opacity: 0, height: 0, overflow: "hidden" }}>
+        <label htmlFor="website">Website</label>
+        <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+      </div>
+
       {/* ── Contact Information ── */}
       <fieldset>
         <legend className="text-lg font-semibold text-[var(--color-text-primary)] mb-4 pb-2 border-b border-[var(--color-border)]">

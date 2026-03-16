@@ -3,12 +3,34 @@ import nodemailer from 'nodemailer';
 import { quoteFormSchema } from '@/lib/validations';
 import { createServerSupabaseClient } from '@/lib/supabase';
 
+// Minimum time (in ms) a real user would need to fill the form
+const MIN_SUBMISSION_TIME_MS = 3000;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    // ── Anti-bot checks ──────────────────────────────────────────────
+    // 1. Honeypot: if the hidden field has a value, it's a bot
+    if (body._hp) {
+      // Return 200 so bots think it succeeded — no point revealing detection
+      console.warn('[Contact API] Honeypot triggered — submission rejected.');
+      return NextResponse.json({ success: true });
+    }
+
+    // 2. Timestamp: reject if submitted faster than a human could fill it
+    const submittedAt = Date.now();
+    const formLoadedAt = Number(body._ts) || 0;
+    if (formLoadedAt > 0 && submittedAt - formLoadedAt < MIN_SUBMISSION_TIME_MS) {
+      console.warn('[Contact API] Submission too fast — likely a bot.');
+      return NextResponse.json({ success: true });
+    }
+
+    // Strip anti-bot fields before validation
+    const { _hp, _ts, ...formFields } = body;
+
     // Validate the request body
-    const result = quoteFormSchema.safeParse(body);
+    const result = quoteFormSchema.safeParse(formFields);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
       return NextResponse.json(

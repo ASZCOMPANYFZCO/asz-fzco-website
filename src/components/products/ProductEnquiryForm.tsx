@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui";
 import { COUNTRIES, DELIVERY_TERMS, HOW_HEARD_OPTIONS } from "@/lib/constants";
@@ -17,6 +17,7 @@ export function ProductEnquiryForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formLoadedAt = useRef<number>(Date.now());
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,6 +40,8 @@ export function ProductEnquiryForm({
       preferredDeliveryDate: formData.get("preferredDeliveryDate") as string,
       howHeard: formData.get("howHeard") as string,
       additionalNotes: formData.get("additionalNotes") as string,
+      _hp: (formData.get("website") as string) || "",
+      _ts: formLoadedAt.current,
     };
 
     try {
@@ -91,6 +94,12 @@ export function ProductEnquiryForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Honeypot field — hidden from real users, bots will auto-fill */}
+      <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", top: "-9999px", opacity: 0, height: 0, overflow: "hidden" }}>
+        <label htmlFor={`website-${productId}`}>Website</label>
+        <input type="text" id={`website-${productId}`} name="website" tabIndex={-1} autoComplete="off" />
+      </div>
+
       {/* Product badge */}
       <div className="p-3 rounded-lg bg-[var(--color-accent-light)]">
         <p className="text-sm text-[var(--color-accent)] font-medium">
