@@ -169,7 +169,7 @@ export function Footer() {
                 href="/terms"
                 className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
               >
-                Terms of Service
+                Terms &amp; Conditions
               </Link>
             </div>
           </div>
