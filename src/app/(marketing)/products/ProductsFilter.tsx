@@ -4,14 +4,21 @@ import { useState, useMemo } from "react";
 import { Search, Filter } from "lucide-react";
 import { ProductCard } from "@/components/products";
 import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
-import type { Product } from "@/lib/types";
+import type { Product, ProductCategoryRecord } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-type CategoryFilter = "all" | "ferro_alloy" | "noble_alloy" | "minor_metal" | "other";
+interface ProductsFilterProps {
+  products: Product[];
+  categories?: ProductCategoryRecord[];
+}
 
-export function ProductsFilter({ products }: { products: Product[] }) {
+export function ProductsFilter({ products, categories }: ProductsFilterProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
+  const categoryList = categories?.length
+    ? categories
+    : Object.entries(PRODUCT_CATEGORY_LABELS).map(([slug, name], i) => ({ slug, name, id: slug, sort_order: i, created_at: "" }));
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
@@ -50,24 +57,31 @@ export function ProductsFilter({ products }: { products: Product[] }) {
 
         {/* Category Tabs */}
         <div className="flex gap-2 p-1 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-          {(["all", "ferro_alloy", "noble_alloy", "minor_metal", "other"] as const).map(
-            (category) => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
-                  activeCategory === category
-                    ? "bg-[var(--color-accent)] text-white"
-                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
-                )}
-              >
-                {category === "all"
-                  ? "All Products"
-                  : PRODUCT_CATEGORY_LABELS[category]}
-              </button>
-            )
-          )}
+          <button
+            onClick={() => setActiveCategory("all")}
+            className={cn(
+              "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
+              activeCategory === "all"
+                ? "bg-[var(--color-accent)] text-white"
+                : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+            )}
+          >
+            All Products
+          </button>
+          {categoryList.map((cat) => (
+            <button
+              key={cat.slug}
+              onClick={() => setActiveCategory(cat.slug)}
+              className={cn(
+                "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
+                activeCategory === cat.slug
+                  ? "bg-[var(--color-accent)] text-white"
+                  : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+              )}
+            >
+              {cat.name}
+            </button>
+          ))}
         </div>
       </div>
 

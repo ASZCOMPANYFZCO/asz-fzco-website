@@ -6,13 +6,26 @@ import Image from "next/image";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
-import type { Product } from "@/lib/types";
+import type { Product, ProductCategoryRecord } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-type CategoryFilter = "all" | "ferro_alloy" | "noble_alloy" | "minor_metal";
+interface FeaturedProductsProps {
+  products: Product[];
+  categories?: ProductCategoryRecord[];
+}
 
-export function FeaturedProducts({ products }: { products: Product[] }) {
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
+export function FeaturedProducts({ products, categories }: FeaturedProductsProps) {
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
+  /** Resolve slug to label, falling back to hardcoded constants */
+  function categoryLabel(slug: string) {
+    if (categories?.length) return categories.find((c) => c.slug === slug)?.name || slug;
+    return PRODUCT_CATEGORY_LABELS[slug as keyof typeof PRODUCT_CATEGORY_LABELS] || slug;
+  }
+
+  const categoryList = categories?.length
+    ? categories
+    : Object.entries(PRODUCT_CATEGORY_LABELS).map(([slug, name], i) => ({ slug, name, id: slug, sort_order: i, created_at: "" }));
 
   const filteredProducts =
     activeCategory === "all"
@@ -36,20 +49,29 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
 
           {/* Category Tabs */}
           <div className="flex gap-2 p-1 bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)]">
-            {(["all", "ferro_alloy", "noble_alloy", "minor_metal"] as const).map((category) => (
+            <button
+              onClick={() => setActiveCategory("all")}
+              className={cn(
+                "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
+                activeCategory === "all"
+                  ? "bg-[var(--color-accent)] text-white"
+                  : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+              )}
+            >
+              All Products
+            </button>
+            {categoryList.map((cat) => (
               <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
+                key={cat.slug}
+                onClick={() => setActiveCategory(cat.slug)}
                 className={cn(
                   "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
-                  activeCategory === category
+                  activeCategory === cat.slug
                     ? "bg-[var(--color-accent)] text-white"
                     : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                 )}
               >
-                {category === "all"
-                  ? "All Products"
-                  : PRODUCT_CATEGORY_LABELS[category]}
+                {cat.name}
               </button>
             ))}
           </div>
@@ -94,7 +116,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
                     variant="primary"
                     className="absolute top-3 left-3"
                   >
-                    {PRODUCT_CATEGORY_LABELS[product.category as keyof typeof PRODUCT_CATEGORY_LABELS]}
+                    {categoryLabel(product.category)}
                   </Badge>
 
                   {/* Hover Overlay */}

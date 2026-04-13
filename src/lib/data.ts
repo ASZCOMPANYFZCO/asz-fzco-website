@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured, createServerSupabaseClient } from "./supabase";
-import type { Product, ProductCategory } from "./types";
+import type { Product, ProductCategory, ProductCategoryRecord } from "./types";
 
 // Timeout helper — ensures Supabase calls never hang forever
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -386,6 +386,79 @@ export async function createEnquiry(enquiry: {
 }
 
 // ============================================================
+// PRODUCT CATEGORIES
+// ============================================================
+
+import { PRODUCT_CATEGORY_LABELS } from "./constants";
+
+/** Fallback categories derived from hardcoded constants (used when DB is unavailable) */
+function getFallbackCategories(): ProductCategoryRecord[] {
+  return Object.entries(PRODUCT_CATEGORY_LABELS).map(([slug, name], i) => ({
+    id: slug,
+    name,
+    slug,
+    sort_order: i + 1,
+    created_at: new Date().toISOString(),
+  }));
+}
+
+export async function getProductCategories(): Promise<ProductCategoryRecord[]> {
+  if (!isSupabaseConfigured()) return getFallbackCategories();
+  const { data, error } = await supabase
+    .from("product_categories")
+    .select("*")
+    .order("sort_order");
+
+  if (error) {
+    console.error("Error fetching product categories:", error);
+    return getFallbackCategories();
+  }
+
+  return (data ?? []) as ProductCategoryRecord[];
+}
+
+export async function upsertProductCategory(category: {
+  id?: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+}) {
+  if (!isSupabaseConfigured()) return { data: null, error: new Error("Supabase not configured") };
+
+  if (category.id) {
+    return supabase
+      .from("product_categories")
+      .update({ name: category.name, slug: category.slug, sort_order: category.sort_order })
+      .eq("id", category.id)
+      .select()
+      .single();
+  }
+
+  return supabase
+    .from("product_categories")
+    .insert({ name: category.name, slug: category.slug, sort_order: category.sort_order })
+    .select()
+    .single();
+}
+
+export async function deleteProductCategory(id: string) {
+  if (!isSupabaseConfigured()) return { error: new Error("Supabase not configured") };
+  return supabase.from("product_categories").delete().eq("id", id);
+}
+
+/** Check how many products use a given category slug */
+export async function getProductCountByCategory(slug: string): Promise<number> {
+  if (!isSupabaseConfigured()) return 0;
+  const { count, error } = await supabase
+    .from("products")
+    .select("*", { count: "exact", head: true })
+    .eq("category", slug);
+
+  if (error) return 0;
+  return count || 0;
+}
+
+// ============================================================
 // SERVER-SAFE DATA FUNCTIONS
 // These create a fresh Supabase client per call so they can
 // be used safely in Server Components (no shared singleton).
@@ -396,6 +469,28 @@ import { unstable_cache } from "next/cache";
 
 /** Revalidation period in seconds — how long cached data is served before refreshing */
 const CACHE_TTL = 60;
+
+/** Server-cached product categories for public pages */
+export const serverGetProductCategories = unstable_cache(
+  async (): Promise<ProductCategoryRecord[]> => {
+    const client = createServerSupabaseClient();
+    if (!client) return getFallbackCategories();
+
+    const { data, error } = await client
+      .from("product_categories")
+      .select("*")
+      .order("sort_order");
+
+    if (error) {
+      console.error("Error fetching product categories (server):", error);
+      return getFallbackCategories();
+    }
+
+    return (data ?? []) as ProductCategoryRecord[];
+  },
+  ["product-categories"],
+  { revalidate: CACHE_TTL }
+);
 
 /** Lightweight listing query — only fetches the columns needed for product cards */
 export const serverGetProducts = unstable_cache(

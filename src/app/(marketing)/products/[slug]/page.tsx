@@ -54,7 +54,7 @@ export default async function ProductPage({
             label:
               PRODUCT_CATEGORY_LABELS[
                 product.category as keyof typeof PRODUCT_CATEGORY_LABELS
-              ],
+              ] || product.category,
             href: `/products?category=${product.category}`,
           },
           { label: product.name },

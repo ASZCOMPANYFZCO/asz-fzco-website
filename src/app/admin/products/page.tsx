@@ -14,26 +14,32 @@ import {
 } from "lucide-react";
 import { AdminHeader } from "@/components/admin";
 import { Button, Badge, Card } from "@/components/ui";
-import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { getAllProducts, deleteProduct } from "@/lib/data";
-import type { Product } from "@/lib/types";
+import { getAllProducts, deleteProduct, getProductCategories } from "@/lib/data";
+import type { Product, ProductCategoryRecord } from "@/lib/types";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<ProductCategoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   useEffect(() => {
-    async function fetchProducts() {
+    async function fetchData() {
       setLoading(true);
-      const data = await getAllProducts();
+      const [data, cats] = await Promise.all([getAllProducts(), getProductCategories()]);
       setProducts(data);
+      setCategories(cats);
       setLoading(false);
     }
-    fetchProducts();
+    fetchData();
   }, []);
+
+  /** Resolve a category slug to its display name */
+  function categoryLabel(slug: string) {
+    return categories.find((c) => c.slug === slug)?.name || slug;
+  }
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name
@@ -87,9 +93,11 @@ export default function AdminProductsPage() {
               className="px-4 py-2.5 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent)]"
             >
               <option value="all">All Categories</option>
-              <option value="ferro_alloy">Ferro Alloys</option>
-              <option value="noble_alloy">Noble Alloys</option>
-              <option value="minor_metal">Minor Metals</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.slug}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -135,7 +143,7 @@ export default function AdminProductsPage() {
                     </div>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="default" size="sm">
-                        {PRODUCT_CATEGORY_LABELS[product.category as keyof typeof PRODUCT_CATEGORY_LABELS]}
+                        {categoryLabel(product.category)}
                       </Badge>
                       <Badge variant="success" size="sm">Active</Badge>
                     </div>
@@ -220,7 +228,7 @@ export default function AdminProductsPage() {
                       </td>
                       <td className="p-4">
                         <Badge variant="default">
-                          {PRODUCT_CATEGORY_LABELS[product.category as keyof typeof PRODUCT_CATEGORY_LABELS]}
+                          {categoryLabel(product.category)}
                         </Badge>
                       </td>
                       <td className="p-4">

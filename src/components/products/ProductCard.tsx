@@ -47,7 +47,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Category Badge */}
           <Badge variant="primary" className="absolute top-3 left-3">
-            {PRODUCT_CATEGORY_LABELS[product.category as keyof typeof PRODUCT_CATEGORY_LABELS]}
+            {PRODUCT_CATEGORY_LABELS[product.category as keyof typeof PRODUCT_CATEGORY_LABELS] || product.category}
           </Badge>
 
           {/* Hover Overlay */}

@@ -1,11 +1,14 @@
 import { PageHeader } from "@/components/shared";
-import { serverGetProducts } from "@/lib/data";
+import { serverGetProducts, serverGetProductCategories } from "@/lib/data";
 import { ProductsFilter } from "./ProductsFilter";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProductsPage() {
-  const products = await serverGetProducts();
+  const [products, categories] = await Promise.all([
+    serverGetProducts(),
+    serverGetProductCategories(),
+  ]);
 
   return (
     <>
@@ -17,7 +20,7 @@ export default async function ProductsPage() {
 
       <section className="section">
         <div className="container-custom">
-          <ProductsFilter products={products} />
+          <ProductsFilter products={products} categories={categories} />
         </div>
       </section>
     </>

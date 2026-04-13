@@ -33,10 +33,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { AdminHeader } from "@/components/admin";
 import { Button, Card } from "@/components/ui";
-import { PRODUCT_CATEGORY_LABELS } from "@/lib/constants";
-import { getProductById, upsertProduct } from "@/lib/data";
+import { getProductById, upsertProduct, getProductCategories } from "@/lib/data";
 import { uploadImage } from "@/lib/storage";
-import type { Product, ProductGrade, MMTASpecs } from "@/lib/types";
+import type { Product, ProductGrade, MMTASpecs, ProductCategoryRecord } from "@/lib/types";
 
 const MMTA_SPEC_LABELS: Record<keyof MMTASpecs, string> = {
   origin: "Origin",
@@ -133,6 +132,7 @@ export default function AdminProductEditPage() {
   const [isLoading, setIsLoading] = useState(!isNew);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [categories, setCategories] = useState<ProductCategoryRecord[]>([]);
 
   // Product state
   const [name, setName] = useState("");
@@ -179,7 +179,11 @@ export default function AdminProductEditPage() {
     setSpecIds(arrayMove(specIds, oldIndex, newIndex));
   };
 
-  // Load product data from Supabase if editing
+  // Load categories + product data
+  useEffect(() => {
+    getProductCategories().then(setCategories);
+  }, []);
+
   useEffect(() => {
     if (!isNew) {
       (async () => {
@@ -426,9 +430,9 @@ export default function AdminProductEditPage() {
                 onChange={(e) => setCategory(e.target.value)}
                 className={inputClass}
               >
-                {Object.entries(PRODUCT_CATEGORY_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.slug}>
+                    {cat.name}
                   </option>
                 ))}
               </select>

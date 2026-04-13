@@ -20,7 +20,15 @@ export interface ProductGrade {
   origin?: string;
 }
 
-export type ProductCategory = 'ferro_alloy' | 'noble_alloy' | 'minor_metal' | 'other';
+export type ProductCategory = string;
+
+export interface ProductCategoryRecord {
+  id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+  created_at: string;
+}
 
 export interface Product {
   id: string;

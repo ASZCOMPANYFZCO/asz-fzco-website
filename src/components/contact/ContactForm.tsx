@@ -10,39 +10,32 @@ import {
   COUNTRIES,
   DELIVERY_TERMS,
   HOW_HEARD_OPTIONS,
-  PRODUCT_CATEGORIES,
-  PRODUCT_CATEGORY_LABELS,
 } from "@/lib/constants";
-import { getProducts } from "@/lib/data";
-import type { Product } from "@/lib/types";
+import { getProducts, getProductCategories } from "@/lib/data";
+import type { Product, ProductCategoryRecord } from "@/lib/types";
 
 export function ContactForm() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<ProductCategoryRecord[]>([]);
   const formLoadedAt = useRef<number>(Date.now());
 
   useEffect(() => {
     getProducts().then(setProducts);
+    getProductCategories().then(setCategories);
   }, []);
 
-  const productsByCategory = useMemo(() => [
-    {
-      key: PRODUCT_CATEGORIES.FERRO_ALLOY,
-      label: PRODUCT_CATEGORY_LABELS[PRODUCT_CATEGORIES.FERRO_ALLOY],
-      products: products.filter((p) => p.category === PRODUCT_CATEGORIES.FERRO_ALLOY),
-    },
-    {
-      key: PRODUCT_CATEGORIES.NOBLE_ALLOY,
-      label: PRODUCT_CATEGORY_LABELS[PRODUCT_CATEGORIES.NOBLE_ALLOY],
-      products: products.filter((p) => p.category === PRODUCT_CATEGORIES.NOBLE_ALLOY),
-    },
-    {
-      key: PRODUCT_CATEGORIES.MINOR_METAL,
-      label: PRODUCT_CATEGORY_LABELS[PRODUCT_CATEGORIES.MINOR_METAL],
-      products: products.filter((p) => p.category === PRODUCT_CATEGORIES.MINOR_METAL),
-    },
-  ], [products]);
+  const productsByCategory = useMemo(() =>
+    categories
+      .map((cat) => ({
+        key: cat.slug,
+        label: cat.name,
+        products: products.filter((p) => p.category === cat.slug),
+      }))
+      .filter((group) => group.products.length > 0),
+    [products, categories]
+  );
 
   const {
     register,
