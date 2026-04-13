@@ -12,10 +12,9 @@ import {
   serverGetBlogPostSummaries,
 } from "@/lib/data";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  // Only 2 DB connections — product count derived from products list
   const [products, posts] = await Promise.all([
     serverGetProducts(),
     serverGetBlogPostSummaries(),

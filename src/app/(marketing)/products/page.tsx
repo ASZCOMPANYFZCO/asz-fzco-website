@@ -2,7 +2,7 @@ import { PageHeader } from "@/components/shared";
 import { serverGetProducts } from "@/lib/data";
 import { ProductsFilter } from "./ProductsFilter";
 
-export const revalidate = 60; // Cache page for 60s
+export const dynamic = "force-dynamic";
 
 export default async function ProductsPage() {
   const products = await serverGetProducts();

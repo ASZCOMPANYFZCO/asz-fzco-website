@@ -2,7 +2,7 @@ import { PageHeader } from "@/components/shared";
 import { serverGetBlogPostSummaries } from "@/lib/data";
 import { NewsFilter } from "./NewsFilter";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
   const posts = await serverGetBlogPostSummaries();
