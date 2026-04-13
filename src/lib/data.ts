@@ -450,6 +450,30 @@ export async function serverGetProductCount(): Promise<number> {
   return products.length;
 }
 
+// Lightweight blog post list — excludes heavy `content` column for listing pages
+export const serverGetBlogPostSummaries = unstable_cache(
+  async (): Promise<Omit<DBBlogPost, "content">[]> => {
+    const client = createServerSupabaseClient();
+    if (!client) return [];
+
+    const { data, error } = await client
+      .from("blog_posts")
+      .select("id, title, slug, excerpt, category, featured_image, author, status, is_featured, published_at, created_at")
+      .eq("status", "published")
+      .order("published_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching blog post summaries (server):", error);
+      return [];
+    }
+
+    return data as Omit<DBBlogPost, "content">[];
+  },
+  ["blog-post-summaries"],
+  { revalidate: CACHE_TTL }
+);
+
+// Full blog posts including content — used for individual post pages
 export const serverGetBlogPosts = unstable_cache(
   async (): Promise<DBBlogPost[]> => {
     const client = createServerSupabaseClient();

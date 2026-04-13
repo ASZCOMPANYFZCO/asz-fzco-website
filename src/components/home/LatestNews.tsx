@@ -4,7 +4,9 @@ import { BlogCard } from "@/components/blog";
 import { Button } from "@/components/ui";
 import type { DBBlogPost } from "@/lib/data";
 
-function adaptPost(post: DBBlogPost) {
+type BlogPostSummary = Omit<DBBlogPost, "content"> & { content?: string | null };
+
+function adaptPost(post: BlogPostSummary) {
   return {
     id: post.id,
     title: post.title,
@@ -17,7 +19,7 @@ function adaptPost(post: DBBlogPost) {
   };
 }
 
-export function LatestNews({ posts }: { posts: DBBlogPost[] }) {
+export function LatestNews({ posts }: { posts: BlogPostSummary[] }) {
   return (
     <section className="section bg-[var(--color-bg-secondary)]">
       <div className="container-custom">

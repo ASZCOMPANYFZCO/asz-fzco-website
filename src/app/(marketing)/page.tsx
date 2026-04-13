@@ -9,7 +9,7 @@ import {
 } from "@/components/home";
 import {
   serverGetProducts,
-  serverGetBlogPosts,
+  serverGetBlogPostSummaries,
 } from "@/lib/data";
 
 export const revalidate = 60;
@@ -18,7 +18,7 @@ export default async function HomePage() {
   // Only 2 DB connections — product count derived from products list
   const [products, posts] = await Promise.all([
     serverGetProducts(),
-    serverGetBlogPosts(),
+    serverGetBlogPostSummaries(),
   ]);
 
   const productCount = products.length;

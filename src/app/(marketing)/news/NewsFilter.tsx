@@ -7,7 +7,9 @@ import type { DBBlogPost } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Search, FileText } from "lucide-react";
 
-function adaptPost(post: DBBlogPost) {
+type BlogPostSummary = Omit<DBBlogPost, "content"> & { content?: string | null };
+
+function adaptPost(post: BlogPostSummary) {
   return {
     id: post.id,
     title: post.title,
@@ -20,7 +22,7 @@ function adaptPost(post: DBBlogPost) {
   };
 }
 
-export function NewsFilter({ posts }: { posts: DBBlogPost[] }) {
+export function NewsFilter({ posts }: { posts: BlogPostSummary[] }) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
