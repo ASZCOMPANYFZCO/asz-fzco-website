@@ -1,0 +1,46 @@
+name: Supabase Keep-Alive
+
+# Keeps the free-tier Supabase project from auto-pausing after 7 days of
+# inactivity. A tiny read query on a schedule counts as database activity and
+# resets the idle timer, so the website's products/news never go offline again.
+#
+# Requires two repository secrets (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_URL       e.g. https://boyvbgxqvhacxsxfgiik.supabase.co
+#   SUPABASE_ANON_KEY  the NEXT_PUBLIC_SUPABASE_ANON_KEY value
+#
+# NOTE: GitHub disables scheduled workflows in a repo with no commits for 60
+# days. If this repo goes quiet that long, re-enable it from the Actions tab
+# (or push any commit) to keep the keep-alive running.
+
+on:
+  schedule:
+    # Daily at 06:00 UTC. Runs far inside the 7-day pause window, leaving plenty
+    # of margin even if GitHub delays or skips the occasional scheduled run.
+    - cron: "0 6 * * *"
+  workflow_dispatch: {} # lets you trigger a run manually from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query Supabase to keep the project awake
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "::error::Missing SUPABASE_URL or SUPABASE_ANON_KEY repository secret."
+            exit 1
+          fi
+          code=$(curl -sS -m 30 -o /dev/null -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/products?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+          echo "Supabase responded with HTTP ${code}"
+          if [ "${code}" != "200" ]; then
+            echo "::error::Keep-alive ping failed (HTTP ${code}). The project may be paused or the secrets may be wrong."
+            exit 1
+          fi
+          echo "Keep-alive successful - project is awake."
