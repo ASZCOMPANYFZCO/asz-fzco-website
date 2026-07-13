@@ -31,6 +31,18 @@ export interface DBProduct {
   updated_at: string;
 }
 
+// Oversized inline images (base64 data URIs) must never reach pages: a single
+// multi-MB value bloats the list queries and caches enough to break rendering
+// for the whole catalog (this took the products page down once). Values over
+// the cap render the placeholder instead.
+const MAX_INLINE_IMAGE_CHARS = 300_000; // ≈220KB decoded
+
+function safeImage(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith("data:") && url.length > MAX_INLINE_IMAGE_CHARS) return undefined;
+  return url;
+}
+
 function dbProductToProduct(db: DBProduct): Product {
   return {
     id: db.id,
@@ -38,8 +50,10 @@ function dbProductToProduct(db: DBProduct): Product {
     slug: db.slug,
     category: db.category as ProductCategory,
     shortDescription: db.short_description,
-    image: db.image || undefined,
-    images: db.images || undefined,
+    image: safeImage(db.image),
+    images: db.images
+      ? db.images.map((i) => safeImage(i)).filter((i): i is string => Boolean(i))
+      : undefined,
     specifications: db.specifications || {},
     mmtaSpecs: db.mmta_specs
       ? {
@@ -562,7 +576,10 @@ export const serverGetBlogPostSummaries = unstable_cache(
       return [];
     }
 
-    return data as Omit<DBBlogPost, "content">[];
+    return (data as Omit<DBBlogPost, "content">[]).map((p) => ({
+      ...p,
+      featured_image: safeImage(p.featured_image) ?? null,
+    }));
   },
   ["blog-post-summaries"],
   { revalidate: CACHE_TTL }
